@@ -56,6 +56,10 @@ Signal(MULTIPLY(Float32(1000.0), dVALUE()), UInt16Array([1, 2, 3, 4, 5]), UInt64
 
 ```
 
+## Examples
+
+See the `examples/` folder.
+
 ## mdstcl
 
 ```
@@ -95,4 +99,18 @@ Connectiong to: SERVER
 TDI> 4 + 5
 9L
 TDI> exit
+```
+
+## Compatability with full MDSplus python package
+
+There is a subpackage called `MDSplus` that provides slightly better mappings with the full MDSplus python package.
+
+```py
+from mdsthin import MDSplus
+
+c = MDSplus.Connection('server')
+
+i = Uint32(42)
+
+MDSplus.mdsExceptions.checkStatus(265388200)
 ```
