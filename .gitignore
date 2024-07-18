@@ -1,0 +1,10 @@
+
+/.venv
+
+# Python cache files
+__pycache__
+*.pyc
+
+# Python package files
+build
+*.egg-info

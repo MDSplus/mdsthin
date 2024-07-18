@@ -1,0 +1,12 @@
+[project]
+name = "mdsthin"
+description = "MDSplus Thin-Client implemented in pure python"
+version = "0.1"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Stephen Lane-Walsh", email = "slwalsh@psfc.mit.edu"},
+]
+requires-python = ">= 3.7"
+dependencies = [
+  "numpy",
+]
