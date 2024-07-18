@@ -250,12 +250,15 @@ class Descriptor:
         """
 
         return self._data
-
-    def __repr__(self):
+    
+    def decompile(self):
         """
         Return the decompiled TDI representation of the data.
         """
 
+        return repr(self)
+
+    def __repr__(self):
         if self._data is None:
             return '*'
         return f'{self.__class__.__name__}({self._data})'
