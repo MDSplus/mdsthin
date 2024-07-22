@@ -124,28 +124,33 @@ class Descriptor:
     
     If called with a python or numpy data type, it will coerce it into the proper MDSplus Descriptor
     subclass. e.g.:
-    ```
-    Descriptor(42) -> Int64(42)
-    Descriptor(numpy.array([1, 2, 3], dtype=numpy.uint8)) -> UInt8Array([1, 2, 3])
-    ```
 
-    If you want to ensure that a given piece of data is a :class:`Descriptor`, call `Descriptor.from_data()`
+    .. code-block:: python
+
+        Descriptor(42) -> Int64(42)
+        Descriptor(numpy.array([1, 2, 3], dtype=numpy.uint8)) -> UInt8Array([1, 2, 3])
+
+    If you want to ensure that a given piece of data is a :class:`Descriptor`, call :meth:`Descriptor.from_data()`
     which will convert it if needed, or return the original :class:`Descriptor` if it already is one. e.g.
-    ```
-    Descriptor.from_data(42) -> Int64(42)
-    Descriptor.from_data(Action(1, 2, 3)) -> Action(1, 2, 3)
-    ```
 
-    This also provides the `unpack()` and `pack()` methods, which are then overridden by each subclass as
-    necessary. Also, the `serialize()` method will call `pack()`, but return the data as a `UInt8Array`.
-    You could then call the `deserialize()` method on either :class:`Int8Array` or :class:`UInt8Array` types.
+    .. code-block:: python
+
+        Descriptor.from_data(42) -> Int64(42)
+        Descriptor.from_data(Action(1, 2, 3)) -> Action(1, 2, 3)
+
+    This also provides the :meth:`Descriptor.unpack()` and :meth:`Descriptor.pack()` methods, which are then
+    overridden by each subclass as necessary. Also, the :meth:`Descriptor.serialize()` method will call
+    :meth:`Descriptor.pack()`, but return the data as a `UInt8Array`. You could then call the
+    :meth:`UInt8Array.deserialize()` method on either :class:`Int8Array` or :class:`UInt8Array` types.
 
     The `repr()` of a :class:`Descriptor` [sub]class should give you the TDI Decompile of that type. e.g.
-    ```
-    repr(Descriptor()) -> '*'
-    repr(Int32(42)) -> '42L'
-    repr(Signal([1, 2, 3], None, [4, 5, 6])) -> 'Build_Signal(Quadword([1, 2, 3]), *, Quadword([4, 5, 6]))'
-    ```
+
+    .. code-block:: python
+
+        repr(Descriptor()) -> '*'
+        repr(Int32(42)) -> '42L'
+        repr(Signal([1, 2, 3], None, [4, 5, 6])) -> 'Build_Signal(Quadword([1, 2, 3]), *, Quadword([4, 5, 6]))'
+
     """
 
     def __new__(cls, data=None, dsc=None, *args, **kwargs):
@@ -213,32 +218,50 @@ class Descriptor:
 
     @property
     def length(self):
-        """mdsdsc_t.length"""
+        """
+        :class:`mdsdsc_t`.length
+        """
+
         return self._dsc.length
     
     @property
     def dtype_id(self):
-        """mdsdsc_t.dtype_id"""
+        """
+        :class:`mdsdsc_t`.dtype_id
+        """
+
         return self._dsc.dtype_id
 
     @property
     def dtype_str(self):
-        """dtype_to_string(mdsdsc_t.dtype_id)"""
+        """
+        dtype_to_string(:class:`mdsdsc_t`.dtype_id)
+        """
+
         return dtype_to_string(self._dsc.dtype_id)
     
     @property
     def class_id(self):
-        """mdsdsc_t.class_id"""
+        """
+        :class:`mdsdsc_t`.class_id
+        """
+
         return self._dsc.class_id
     
     @property
     def class_str(self):
-        """class_to_string(mdsdsc_t.class_id)"""
+        """
+        class_to_string(:class:`mdsdsc_t`.class_id)
+        """
+
         return class_to_string(self._dsc.class_id)
 
     @property
     def offset(self):
-        """mdsdsc_t.offset"""
+        """
+        :class:`mdsdsc_t`.offset
+        """
+
         return self._dsc.offset
 
     def data(self):
@@ -309,7 +332,7 @@ class Descriptor:
 
         :param buffer: The buffer to unpack.
         :type buffer: bytes, bytearray or any type that implements the buffer protocol.
-        :param :class:`Connection` conn: The connection, used to gather missing metadata, such as the FULLPATH
+        :param Connection conn: The connection, used to gather missing metadata, such as the FULLPATH
             of a given NID, defaults to None
         :return: An instance of a :class:`Descriptor` subclass containing the data.
         :rtype: A subclass of :class:`Descriptor`

@@ -4,8 +4,7 @@
 ## Installation
 
 ```sh
-git clone https://github.com/MDSplus/mdsthin.git
-python3 -m pip install -e mdsthin
+python3 -m pip install mdsthin
 ```
 
 ## Tests

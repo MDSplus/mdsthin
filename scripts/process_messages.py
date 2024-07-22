@@ -76,7 +76,7 @@ def getException(status):
     return EXCEPTION_MAP.get(status, MdsException(f'Unknown status: {status}'))
 
 def getExceptionFromError(error):
-    if error.startswith('%'):
+    if type(error) is str and error.startswith('%'):
         prefix = error.split(',', maxsplit=1)[0]
         return EXCEPTION_PREFIX_MAP.get(prefix, MdsException(error))
 
@@ -109,7 +109,15 @@ for xml_filename in xml_filename_list:
                     if status_name.startswith('CAM_') or status_name == 'CAMACERR':
                         continue
 
+                    facility_name_override = status.get('facnam')
+                    facility_abbreviation = status.get('facabb', facility_name)
+                    if facility_name_override is not None:
+                        continue
+
                     deprecated = status.get('deprecated', None)
+                    if deprecated is not None:
+                        continue
+
                     severity = SEVERITY_MAP[status.get('severity').lower()]
 
                     message = status.get('text', None)
