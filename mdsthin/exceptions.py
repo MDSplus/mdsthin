@@ -45,6 +45,9 @@ def getException(status):
     return EXCEPTION_MAP.get(status, MdsException(f'Unknown status: {status}'))
 
 def getExceptionFromError(error):
+    if error is None:
+        return None
+    
     if error.startswith('%'):
         prefix = error.split(',', maxsplit=1)[0]
         return EXCEPTION_PREFIX_MAP.get(prefix, MdsException(error))

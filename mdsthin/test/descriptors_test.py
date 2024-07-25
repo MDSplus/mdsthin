@@ -573,7 +573,7 @@ class DescriptorsTest(unittest.TestCase):
         self.assertEqual(data.value, None)
         self.assertEqual(data.error, None)
         self.assertEqual(data.data(), None)
-        self.assertEqual(type(data.getException()), MdsException)
+        self.assertEqual(data.getException(), None)
 
         data = WithError('value', 'error')
         self.assertEqual(data.value, 'value')

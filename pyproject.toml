@@ -1,7 +1,7 @@
 [project]
 name = "mdsthin"
 description = "MDSplus Thin-Client implemented in pure python"
-version = "1.1"
+version = "1.1.1"
 license = {file = "LICENSE"}
 readme = "README.md"
 authors = [
@@ -11,3 +11,8 @@ requires-python = ">= 3.7"
 dependencies = [
   "numpy",
 ]
+
+[project.urls]
+"Homepage" = "https://github.com/MDSplus/mdsthin"
+"Bug Reports" = "https://github.com/MDSplus/mdsthin/issues"
+"Source" = "https://github.com/MDSplus/mdsthin/"

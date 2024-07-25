@@ -1,7 +1,7 @@
 
 # mdsthin - Python MDSplus Thin Client Implementation
 
-This package provides the types and functions needed to interface with MDSplus over thin client. This contains most of the functionality from the regular MDSplus C+Python package, but does not map perfectly. If you are migrating from the regular package, or plan to support both, see [Full MDSplus Package Compatability](#full-mdsplus-package-compatability).
+This package provides the types and functions needed to interface with MDSplus over thin client. This contains most of the functionality from the regular MDSplus C/Python package, but does not map perfectly. If you are migrating from the regular package, or plan to support both, see [Full MDSplus Package Compatability](#full-mdsplus-package-compatability).
 
 **What is thin client?**  
 Thin allows access to MDSplus through TDI expressions, using the `Connection` class in python, or `mdsconnect`/`mdsvalue` in our other APIs.
@@ -50,6 +50,11 @@ c = mdsthin.Connection('username@server:8123')
 # Connect over SSH
 c = mdsthin.Connection('ssh://server')
 c = mdsthin.Connection('sshp://server')
+
+# Using a with statement
+with mdsthin.Connection('server') as c:
+    ...
+    # c.disconnect() will be called automatically
 ```
 
 For more information on how to use MDSip over SSH, see [Advanced SSH Usage](#advanced-ssh-usage)
@@ -244,29 +249,81 @@ If you encounter code that should work with this package but doesn't, please [cr
 
 ## Advanced SSH Usage
 
-There are two methods of SSH supported, `ssh://` and `sshp://`.
+There are two methods of SSH supported, `ssh://` and `sshp://`, as well as two SSH backends, `subprocess` and `paramiko`. You can use any method with any backend, and the default is `subprocess`.
 
-Using `ssh://` will attempt to spawn `/bin/sh -l -c mdsip-server-ssh` on the remote server, and then use that as the MDSip server.
+### `ssh://` - Connect using `mdsip-server-ssh`
+
+Using this protocol will attempt to spawn `/bin/sh -l -c mdsip-server-ssh` on the remote server, and then use that as the MDSip server.
 
 **Note:** This will fail if you do not source the MDSplus `setup.sh` on login, or if it cannot find `mdsip-server-ssh` on the `$PATH`.
 
-Using `sshp://` will attempt to spawn `nc PROXY_HOST PROXY_PORT` on the remote server, and then use that to proxy to the MDSip server. You can configure the `PROXY_HOST` and `PROXY_PORT` when creating a `Connection` by passing `ssh_proxy_host` and `ssh_proxy_port`.
+```py
+# This will run `ssh server "/bin/sh -l -c mdsip-server-ssh"`
+c = mdsthin.Connection('ssh://server')
+
+# Specify a custom username for MDSplus and SSH
+c = mdsthin.Connection('ssh://username@server')
+
+# Specify a custom port for SSH
+c = mdsthin.Connection('ssh://server', ssh_port=2222)
+
+# For backwards compatability with regular MDSplus, you can also use
+c = mdsthin.Connection('ssh://server:2222')
+```
+
+### `sshp://` - Connect using `nc $sshp_host $port`
+
+Using this protocol will attempt to spawn `ssh $host -p $ssh_port` and then `nc $sshp_host $port` on the remote server, and then use that to proxy to the MDSip server.
 
 ```py
-# Specify a custom username and port for SSH
-c = mdsthin.Connection('ssh://username@server:2222')
+# This will run `ssh server "nc localhost 8000"`
+c = mdsthin.Connection('sshp://server')
 
-# Proxy to a given host and port
-c = mdsthin.Connection('sshp://proxy-server',
-    sshp_host='server', sshp_port=8123)
+# Specify a custom username for MDSplus and SSH
+c = mdsthin.Connection('sshp://username@server')
+
+# Specify a custom port for SSH
+# This will run `ssh server -p2222 "nc localhost 8000"`
+c = mdsthin.Connection('ssh://server', ssh_port=2222)
+
+# Specify a custom port for MDSip
+# This will run `ssh server "nc localhost 8123"`
+c = mdsthin.Connection('ssh://server:8123')
+
+# Specify a custom host for MDSip
+# This will run `ssh proxy-server "nc server 8000"`
+c = mdsthin.Connection('ssh://proxy-server', sshp_host='server')
+
+# All together now!
+# This will run `ssh proxy-server -p2222 "nc server 8123"`
+c = mdsthin.Connection('sshp://proxy-server:8123',
+    ssh_port=2222, sshp_host='server')
+```
+
+### Using the `subprocess` backend
+
+This backend uses the `subprocess` package to `Popen` an `ssh` subprocess. This will then connect to the server and run the command specified by your protocol (`ssh://` or `sshp://`, see above) and attach to the stdin/stdout to communicate with the server.
+
+```py
+# This is the default if not specified
+c = mdsthin.Connection('ssh://server')
+
+# You can also specify it explicitly
+c = mdsthin.Connection('ssh://server', ssh_backend='subprocess')
 
 # Specify additional SSH command line options
 c = mdsthin.Connection('ssh://server',
     ssh_subprocess_args=['-i', '/path/to/private/key'])
+```
 
-# The default backend for SSH is 'subprocess', which executes `ssh`
-# in a subprocess.Popen(), we also support the paramiko package
-# for pure-python SSH connections
+### Using the `paramiko` backend
+
+This backend uses the [`paramiko`](https://www.paramiko.org/) package to create an `SSHClient` and `connect()` to the server. This will then run the command specified by your protocol (`ssh://` or `sshp://`, see above) and attach to the stdin/stdout to communicate with the server. This could be useful in a pure-python environment, or if there are concerns about executing subprocesses.
+
+If you are unsure, go with the default `subprocess`.
+
+```py
+# Specify the `paramiko` backend
 c = mdsthin.Connection('ssh://server', ssh_backend='paramiko')
 
 # Specify additional kwargs to paramiko's `connect()` function

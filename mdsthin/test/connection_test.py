@@ -31,6 +31,7 @@ from ..functions import *
 class ConnectionTest(unittest.TestCase):
 
     SERVER = ''
+    TIMEOUT = 5
 
     @classmethod
     def setUpClass(cls):
@@ -40,7 +41,7 @@ class ConnectionTest(unittest.TestCase):
     def setUp(self):
         if self.SERVER == '':
             raise unittest.SkipTest("--server was not specified")
-    
+
     def test_tdi_types(self):
 
         tests = [
@@ -115,10 +116,153 @@ class ConnectionTest(unittest.TestCase):
 
     def test_root_whoami(self):
 
-        root_conn = Connection(self.SERVER, username='root')
+        root_conn = Connection(f'root@{self.SERVER}')
 
         whoami = root_conn.get('whoami()').data()
         self.assertEqual(whoami, 'nobody', msg='Claiming to be root should map you to nobody.')
+
+    # We're a little limited in what we can test here
+    def test_ssh_subprocess(self):
+
+        url = f'ssh://{self.SERVER}'
+        with Connection(url, timeout=self.TIMEOUT) as test_conn:
+            whoami = test_conn.get('whoami()').data()
+            self.assertEqual(
+                whoami, os.getlogin(),
+                f'Connection("{url}") failed'
+            )
+
+        url = f'ssh://{os.getlogin()}@{self.SERVER}'
+        with Connection(url, timeout=self.TIMEOUT, ssh_port=22) as test_conn:
+            whoami = test_conn.get('whoami()').data()
+            self.assertEqual(
+                whoami, os.getlogin(),
+                f'Connection("{url}", ssh_port=22) failed'
+            )
+
+        url = f'ssh://{os.getlogin()}@{self.SERVER}:22'
+        with Connection(url, timeout=self.TIMEOUT) as test_conn:
+            whoami = test_conn.get('whoami()').data()
+            self.assertEqual(
+                whoami, os.getlogin(),
+                f'Connection("{url}") failed'
+            )
+
+        # TODO: Test ssh_subprocess_args
+
+    def test_ssh_paramiko(self):
+        try:
+            import warnings
+
+            # Silence the cryptography deprecation warnings from simply importing paramiko
+            with warnings.catch_warnings(action='ignore'):
+                import paramiko
+
+            url = f'ssh://{self.SERVER}'
+            with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, os.getlogin(),
+                    f'Connection("{url}", ssh_backend="paramiko") failed'
+                )
+
+            url = f'ssh://{os.getlogin()}@{self.SERVER}'
+            with Connection(url, timeout=self.TIMEOUT, ssh_port=22, ssh_backend='paramiko') as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, os.getlogin(),
+                    f'Connection("{url}", ssh_port=22, ssh_backend="paramiko") failed'
+                )
+
+            url = f'ssh://{os.getlogin()}@{self.SERVER}:22'
+            with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, os.getlogin(),
+                    f'Connection("{url}", ssh_backend="paramiko") failed'
+                )
+
+            # TODO: Test ssh_paramiko_options
+
+        except ImportError:
+            self.skipTest('Cannot import paramiko')
+
+    def test_sshp_subprocess(self):
+
+        url = f'sshp://{self.SERVER}'
+        with Connection(url, timeout=self.TIMEOUT) as test_conn:
+            whoami = test_conn.get('whoami()').data()
+            self.assertEqual(
+                whoami, os.getlogin(),
+                f'Connection("{url}") failed'
+            )
+
+        url = f'sshp://{os.getlogin()}@{self.SERVER}'
+        with Connection(url, timeout=self.TIMEOUT, ssh_port=22) as test_conn:
+            whoami = test_conn.get('whoami()').data()
+            self.assertEqual(
+                whoami, os.getlogin(),
+                f'Connection("{url}", ssh_port=22) failed'
+            )
+
+        url = f'sshp://{os.getlogin()}@{self.SERVER}:8000'
+        with Connection(url, timeout=self.TIMEOUT) as test_conn:
+            whoami = test_conn.get('whoami()').data()
+            self.assertEqual(
+                whoami, os.getlogin(),
+                f'Connection("{url}") failed'
+            )
+
+        url = f'sshp://{os.getlogin()}@{self.SERVER}:8000'
+        with Connection(url, timeout=self.TIMEOUT, ssh_port=22) as test_conn:
+            whoami = test_conn.get('whoami()').data()
+            self.assertEqual(
+                whoami, os.getlogin(),
+                f'Connection("{url}", ssh_port=22) failed'
+            )
+
+    def test_sshp_paramiko(self):
+        try:
+            import warnings
+
+            # Silence the cryptography deprecation warnings from simply importing paramiko
+            with warnings.catch_warnings(action='ignore'):
+                import paramiko
+
+            url = f'sshp://{self.SERVER}'
+            with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, os.getlogin(),
+                    f'Connection("{url}", ssh_backend="paramiko") failed'
+                )
+
+            url = f'sshp://{os.getlogin()}@{self.SERVER}'
+            with Connection(url, timeout=self.TIMEOUT, ssh_port=22, ssh_backend='paramiko') as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, os.getlogin(),
+                    f'Connection("{url}", ssh_port=22, ssh_backend="paramiko") failed'
+                )
+
+            url = f'sshp://{os.getlogin()}@{self.SERVER}:8000'
+            with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, os.getlogin(),
+                    f'Connection("{url}", ssh_backend="paramiko") failed'
+                )
+
+            url = f'sshp://{os.getlogin()}@{self.SERVER}:8000'
+            with Connection(url, timeout=self.TIMEOUT, ssh_port=22, ssh_backend='paramiko') as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, os.getlogin(),
+                    f'Connection("{url}", ssh_port=22, ssh_backend="paramiko") failed'
+                )
+
+        except ImportError:
+            self.skipTest('Cannot import paramiko')
 
     def test_empty_get(self):
 

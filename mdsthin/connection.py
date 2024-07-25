@@ -25,8 +25,10 @@
 
 import os
 import sys
+import time
 import ctypes
 import socket
+import logging
 
 from .message import *
 from .exceptions import *
@@ -41,34 +43,58 @@ SSH_BACKEND_PARAMIKO   = 'paramiko'
 
 class Connection:
     """Implements an MDSip connection to an MDSplus server."""
-    
+
     def __init__(self,
         url: str,
         timeout: float = 60.0,
+        verbose: bool = False,
         ssh_backend: str = SSH_BACKEND_SUBPROCESS,
+        ssh_port: int = None,
         sshp_host: str = 'localhost',
-        sshp_port: int = 8000,
-        ssh_subprocess_args: list = [],
-        ssh_paramiko_options: dict = {},
+        ssh_subprocess_args: list = None,
+        ssh_paramiko_options: dict = None,
     ):
         """
         Initialize an MDSplus connection to a given URL.
 
-        The URL will be parsed as `PROTO://USERNAME@HOSTNAME:PORT`. The default PROTO is tcp,
-        the default USERNAME is `os.getlogin()`, and the default PORT is 8000.
+        The URL will be parsed as `proto://username@host:port`. The default `proto` is tcp,
+        the default `username` is `os.getlogin()`, and the default `port` is 8000.
+
+        For SSH connections you can also specify `ssh_port` as a kwarg, the default is up to the
+        backend, but should always be 22. Except for `ssh://`, where `ssh_port` will default to
+        `port` if it is specified, otherwise it will be up to the backend. For `sshp://` you can
+        also specify `sshp_host` to specify the MDSip host to netcat to after connecting to ssh,
+        otherwise it will default to `localhost`.
+
+        Supported protocols:
+         * tcp:// - Connect directly to the MDSip server at `host:port` over IPv4.
+         * tcp6:// - Connect directly to the MDSip server at `host:port` over IPv6.
+         * ssh:// - Connect over SSH to `host:ssh_port` and then spawn `mdsip-server-ssh`.
+         * sshp:// - Connect over SSH to `host:ssh_port` and then spawn `nc $sshp_host $port`.
 
         :param str url: The URL to connect to.
         :param float timeout: The timeout for all socket operations in seconds, defaults to 10s
+        :param int ssh_port: The port to ssh to when using one of the SSH protocols.
         :param str sshp_host: The host to netcat to when using `sshp://`, defaults to 'localhost'.
-        :param int sshp_port: The port to netcat to when using `sshp://`, defaults to 8000.
         :param list ssh_subprocess_args: Additional arguments to pass to the ssh subprocess
-            command line when using SSH_BACKEND_SUBPROCESS and one of the SSH protocols.
+            command line when using `SSH_BACKEND_SUBPROCESS` and one of the SSH protocols.
         :param dict ssh_paramiko_options: Additional kwargs to pass to the paramiko connect()
-            function when using SSH_BACKEND_PARAMIKO and one of the SSH protocols.
+            function when using `SSH_BACKEND_PARAMIKO` and one of the SSH protocols.
         :raises TimeoutError: if the connection fails.
-        :raises socket.gaierror: if the hostname could not be resolved.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko socket wrapper fails.
+        :raises paramiko.ssh_exception.*: if the paramiko client fails.
+        :raises socket.gaierror: if `host` could not be resolved to an IP.
         :raises MdsException: if an unsupported protocol is specified, or if the login fails.
         """
+
+        logging.basicConfig()
+
+        self._logger = logging.getLogger(__name__)
+        if verbose:
+            self._logger.setLevel(logging.DEBUG)
+        else:
+            self._logger.setLevel(logging.WARNING)
 
         self._socket = None
         self._timeout = timeout
@@ -77,8 +103,8 @@ class Connection:
         self._compression_level = None
 
         self._ssh_backend = ssh_backend
+        self._ssh_port = ssh_port
         self._sshp_host = sshp_host
-        self._sshp_port = sshp_port
         self._ssh_subprocess_args = ssh_subprocess_args
         self._ssh_paramiko_options = ssh_paramiko_options
 
@@ -86,13 +112,12 @@ class Connection:
         self._protocol = 'tcp'
         if '://' in self._host:
             self._protocol, self._host = self._host.split('://', maxsplit=1)
-        
+
         SUPPORTED_PROTOCOLS = ['tcp', 'tcp6', 'ssh', 'sshp']
         if self._protocol not in SUPPORTED_PROTOCOLS:
             raise MdsException(f'Only the following protocols are supported: {", ".join(SUPPORTED_PROTOCOLS)}')
 
-        # The username used for the MDSip login packet, as well as SSH if the protocol
-        # is ssh or sshp
+        # The username used for the MDSip login packet, and SSH if the protocol is `ssh://` or `sshp://`
         self._username = os.getlogin()
 
         if '@' in self._host:
@@ -103,13 +128,12 @@ class Connection:
         # The MDSip default port
         self._port = 8000
 
-        if self._protocol in ['ssh', 'sshp']:
-            # If we are using SSH, the default port should be SSH's default port
-            self._port = 22
-
         if ':' in self._host:
             self._host, self._port = self._host.split(':', maxsplit=1)
             self._port = int(self._port)
+
+            if self._protocol == 'ssh' and self._ssh_port is None:
+                self._ssh_port = self._port
 
         self.connect()
 
@@ -118,21 +142,24 @@ class Connection:
 
     # Used for with statement
     def __enter__(self):
-        self.connect()
+        return self
 
     # Used for with statement
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         self.disconnect()
-        
+
     def connect(self):
         """
         Initialize the socket and do the login handshake.
 
         :raises TimeoutError: if the connection fails.
         :raises socket.gaierror: if the hostname could not be resolved.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko socket wrapper fails.
+        :raises paramiko.ssh_exception.*: if the paramiko client fails.
         :raises MdsException: if the login fails.
         """
-        
+
         if self._protocol in ['tcp', 'tcp6']:
 
             if self._protocol == 'tcp':
@@ -144,18 +171,21 @@ class Connection:
 
             self._socket = socket.socket(socket_family, socket_type)
 
+            self._logger.debug(f'Setting timeout to {self._timeout}s')
             self._socket.settimeout(self._timeout)
-            
+
             # This causes a massive speed increase
             # It was designed to reduce the number of small packets on the wire, but we use
             # small packets for a lot of things, so it only hurts us
             self._socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            
+
             # Regular MDSplus also sets SO_KEEPALIVE and SO_OOBINLINE
 
+            self._logger.debug(f'Resolving {self._host}')
             address_list = socket.getaddrinfo(self._host, self._port, family=socket_family, type=socket_type)
             self._address = address_list[0][4]
 
+            self._logger.debug(f'Connecting to {self._address}:{self._port}')
             self._socket.connect(self._address)
 
         elif self._protocol in ['ssh', 'sshp']:
@@ -163,42 +193,115 @@ class Connection:
             if self._protocol == 'ssh':
                 command = '/bin/sh -l -c mdsip-server-ssh'
             elif self._protocol == 'sshp':
-                command = f'nc {self._sshp_host} {self._sshp_port}'
+                command = f'nc {self._sshp_host} {self._port}'
 
             if self._ssh_backend == SSH_BACKEND_SUBPROCESS:
 
+                # TODO: Support plink fallback for windows
+
                 import subprocess
 
+                ssh_command = ['ssh', f'{self._username}@{self._host}']
+
+                if self._ssh_port is not None:
+                    ssh_command.append(f'-p{self._ssh_port}')
+
+                if self._ssh_subprocess_args is not None:
+                    ssh_command.extend(self._ssh_subprocess_args)
+                
+                ssh_command.append(command)
+
+                ssh_command_print = [ f'"{v}"' if ' ' in v else v for v in ssh_command ]
+                self._logger.debug(f'Executing {" ".join(ssh_command_print)}')
+
                 self._ssh_subprocess = subprocess.Popen(
-                    ['ssh', f'{self._username}@{self._host}', f'-p{self._port}', *self._ssh_subprocess_args, command],
+                    ssh_command,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    # Do not pipe stderr>stdout or the first packet we recv could be the shell errors from ssh
+                    stderr=subprocess.PIPE,
                 )
 
-                class SubprocessSocket:
-                    def __init__(self, proc: subprocess.Popen):
+                import threading
+
+                # Why is adding a timeout so hard
+                class SubprocessTimeout:
+                    def __init__(self, proc, timeout):
                         self._proc = proc
+                        self._timer = threading.Timer(interval=timeout, function=self.do_timeout)
 
-                    def recv(self, size, flags):
-                        return self._proc.stdout.read(size)
+                    def __enter__(self):
+                        self._timer.start()
+                        return self
 
-                    def sendall(self, buffer):
-                        self._proc.stdin.write(buffer)
-                        self._proc.stdin.flush()
-
-                    def close(self): 
+                    def __exit__(self, exc_type, exc_value, exc_traceback):
+                        self._timer.cancel()
+                        del self._timer
+                    
+                    def do_timeout(self):
                         self._proc.terminate()
 
-                self._socket = SubprocessSocket(self._ssh_subprocess)
+                class SubprocessSocket:
+                    def __init__(self, proc: subprocess.Popen, timeout: float):
+                        self._proc = proc
+                        self._timeout = timeout
+
+                    def recv(self, size, flags):
+                        with SubprocessTimeout(self._proc, self._timeout):
+                            return self._proc.stdout.read(size)
+
+                    def sendall(self, buffer):
+                        with SubprocessTimeout(self._proc, self._timeout):
+                            self._proc.stdin.write(buffer)
+                            self._proc.stdin.flush()
+
+                    def close(self):
+                        self._proc.terminate()
+                        self._proc.stdin.close()
+                        self._proc.stdout.close()
+                        self._proc.stderr.close()
+                        self._proc.wait()
+
+                # If stderr is blocking, then we can't check it without locking the whole program up
+                try:
+                    os.set_blocking(self._ssh_subprocess.stderr.fileno(), False)
+
+                    time.sleep(0.5) # Give the subprocess time to connect
+
+                    for line in self._ssh_subprocess.stderr.readlines():
+                        self._logger.warning(line.decode().rstrip())
+
+                except:
+                    self._logger.debug('Unable to change SSH subprocess stderr to non-blocking')
+
+                # TODO: Support timeouts
+
+                self._socket = SubprocessSocket(self._ssh_subprocess, self._timeout)
 
             elif self._ssh_backend == SSH_BACKEND_PARAMIKO:
 
-                import paramiko
+                import warnings
+
+                # Silence the cryptography deprecation warnings from simply importing paramiko
+                with warnings.catch_warnings(action='ignore'):
+                    import paramiko
+
+                paramiko_options = {
+                    'username': self._username,
+                }
+
+                if self._ssh_port is not None:
+                    paramiko_options['port'] = int(self._ssh_port)
+
+                if self._ssh_paramiko_options is not None:
+                    paramiko_options.update(self._ssh_paramiko_options)
+
+                paramiko_options_print = [ f"{k}={repr(v)}" for k,v in paramiko_options.items() ]
+                self._logger.debug(f'Calling paramiko.client.SSHClient.connect("{self._host}", {", ".join(paramiko_options_print)})')
 
                 self._ssh_client = paramiko.client.SSHClient()
                 self._ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                self._ssh_client.connect(self._host, username=self._username, **self._ssh_paramiko_options)
+                self._ssh_client.connect(self._host, **paramiko_options)
 
                 class ParamikoSocket:
                     def __init__(self, client, stdin, stdout, stderr):
@@ -214,10 +317,24 @@ class Connection:
                         self._stdin.write(buffer)
                         self._stdin.flush()
 
-                    def close(self): 
+                    def close(self):
                         self._client.close()
 
+                self._logger.debug(f'Calling paramiko.client.SSHClient.exec_command("{command}")')
                 stdin, stdout, stderr = self._ssh_client.exec_command(command)
+
+                # If stderr is blocking, then we can't check it without locking the whole program up
+                try:
+                    stderr.channel.settimeout(0.5) # Give the subprocess time to connect
+
+                    for line in stderr.readlines():
+                        self._logger.warning(line.rstrip())
+
+                except:
+                    self._logger.debug('Unable to change SSH subprocess stderr to non-blocking')
+
+                stdin.channel.settimeout(self._timeout)
+                stdout.channel.settimeout(self._timeout)
 
                 self._socket = ParamikoSocket(self._ssh_client, stdin, stdout, stderr)
 
@@ -225,25 +342,33 @@ class Connection:
         msg_login.ndims = 1
         msg_login.dims[0] = MDSIP_VERSION
 
+        self._logger.debug(f'Sending login request with username="{self._username}"')
         self._send(msg_login)
 
-        # The login response does not contain data
+        # The login response packet is a copy of the login request packet with a few fields changed,
+        # so if we process it with self._recv it will wait for data that will never come
         msg_login_buffer = self._socket.recv(ctypes.sizeof(msg_login), socket.MSG_WAITALL)
+        if len(msg_login_buffer) == 0:
+            raise MdsException('Failed to connect to server')
+        
         msg_login = Message.from_buffer_copy(msg_login_buffer)
 
         if STATUS_NOT_OK(msg_login.status):
             raise MdsException('Failed to login')
-        
+
         self._compression_level = (msg_login.status & 0x1E) >> 1
         self._client_type = msg_login.client_type
-        
+
         if msg_login.ndims > 0:
-            self.version = msg_login.dims[0]
+            self._server_version = msg_login.dims[0]
+
+        self._logger.debug(f'Received login response with version={self._server_version} client_type={self._client_type} compression_level={self._compression_level}')
 
     def disconnect(self):
         """Close the socket."""
 
         if self._socket:
+            self._logger.debug('Disconnecting')
             self._socket.close()
             self._socket = None
 
@@ -255,6 +380,8 @@ class Connection:
     def _send(self, msg: Message):
 
         buffer = msg.pack()
+
+        self._logger.debug(f'Sending packet with dtype_id={dtype_to_string(msg.dtype_id)} msglen={msg.msglen}')
         self._socket.sendall(buffer)
 
     def _recv(self):
@@ -265,8 +392,10 @@ class Connection:
         msg_buffer = self._socket.recv(ctypes.sizeof(msg), socket.MSG_WAITALL)
         if len(msg_buffer) < ctypes.sizeof(msg):
             raise TimeoutError
-        
+
         msg = Message.from_buffer_copy(msg_buffer)
+
+        self._logger.debug(f'Received message with dtype_id={dtype_to_string(msg.dtype_id)} msglen={msg.msglen}')
 
         data_length = msg.msglen - ctypes.sizeof(Message)
         if data_length > 0:
@@ -277,13 +406,15 @@ class Connection:
                 chunk_buffer = self._socket.recv(len(data_view), socket.MSG_WAITALL)
                 if len(chunk_buffer) == 0:
                     break
-                
+
+                self._logger.debug(f'Received data packet of {len(chunk_buffer)} bytes, {len(data_view)}/{data_length}')
+
                 data_view[ : len(chunk_buffer)] = chunk_buffer
                 data_view = data_view[len(chunk_buffer) : ]
 
             if len(data_view) > 0:
                 raise TimeoutError
-            
+
             data = msg.unpack_data(data_buffer)
 
         return msg, data
@@ -299,12 +430,14 @@ class Connection:
         :return: The result of executing the expression.
         :rtype: :class:`Descriptor`
         :raises TimeoutError: if the connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result status indicates an error.
         """
 
         if expr.strip() == '':
             return Descriptor()
-        
+
         mget = Message(expr, compression_level=self._compression_level)
         mget.nargs = 1 + len(args)
 
@@ -340,6 +473,8 @@ class Connection:
         :return: The result of executing the expression.
         :rtype: :class:`Descriptor`
         :raises TimeoutError: if the connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result status indicates an error.
         """
         return self.get(f'SerializeOut(`({expr};))', *args).deserialize(conn=self)
@@ -353,6 +488,8 @@ class Connection:
         :param *args: The optional arguments to be inserted for the placeholders in the
             expression. All native python/numpy types will be converted to Descriptors.
         :raises TimeoutError: if the connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result status indicates an error.
         """
         args = [path, expr] + list(args)
@@ -379,7 +516,7 @@ class Connection:
         :return: :class:`PutMany(self)`
         :rtype: :class:`PutMany`
         """
-        
+
         return PutMany(self)
 
     def openTree(self, tree: str, shot: int):
@@ -389,6 +526,8 @@ class Connection:
         :param str tree: The tree name to open.
         :param int shot: The shot number to open.
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the tree could not be opened.
         """
 
@@ -403,6 +542,9 @@ class Connection:
 
         :param str tree: The tree name to close.
         :param int shot: The shot number to close.
+        :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the tree could not be closed.
         """
 
@@ -410,7 +552,7 @@ class Connection:
 
         if STATUS_NOT_OK(status):
             raise getException(status)
-        
+
     def closeAllTrees(self):
         """
         Close all open MDSplus trees.
@@ -418,6 +560,8 @@ class Connection:
         :return: The number of trees closed.
         :rtype: Descriptor
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if there was a problem executing the `get()`.
         """
 
@@ -429,6 +573,8 @@ class Connection:
 
         :param str path: The tree node path to be set as the new default location.
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the tree node could not be found, or the location
             could not be changed.
         """
@@ -446,18 +592,22 @@ class Connection:
         :return: The command output from mdstcl.
         :rtype: str
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if there was a problem executing the command.
         """
         result = self.get('Tcl($,_res);_res', command)
         if result is None:
             return ''
         return result.data()
-    
+
     def mdstcl(self):
         """
         Create a faux mdstcl prompt, calling `tcl()` for each command.
 
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         """
 
         while True:
@@ -472,7 +622,7 @@ class Connection:
                 break
 
             command = command.strip()
-            
+
             # Empty command
             if len(command) == 0:
                 continue
@@ -487,12 +637,14 @@ class Connection:
 
             if result is not None:
                 print(result, end='')
-    
+
     def tdic(self):
         """
         Create a faux tdic prompt, calling `get()` for each command.
 
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         """
 
         while True:
@@ -529,7 +681,7 @@ class GetMany:
 
     This must be constructed with a reference to a :class:`Connection`, this be done with
     `connection.getMany()`. You can then call `append()` to add expressions to the list.
-    Once the list is complete, you must use `execute()` to send the expressions to the 
+    Once the list is complete, you must use `execute()` to send the expressions to the
     server and retrieve the result. This will return a dictionary of the result, or you
     can use `get()` to access the expressions by name.
 
@@ -539,7 +691,7 @@ class GetMany:
     gm.append('y', '\\IP')
     gm.append('x', 'dim_of(\\IP)')
     result = gm.execute()
-    
+
     y = gm.get('y')
     x = gm.get('x')
     # or
@@ -547,7 +699,7 @@ class GetMany:
     x = result['x']
     ```
     """
-    
+
     def __init__(self, connection: Connection):
         self._connection = connection
         self._queries = List()
@@ -590,17 +742,19 @@ class GetMany:
             `{ NAME: { 'error': ERROR_STRING } }` if there was an error.
         :rtype: :class:`Dictionary`
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result of GetManyExecute() is an error string, or
             if `get()` encounters an error.
         """
         result = self._connection.get('GetManyExecute($)', self._queries.serialize())
-        
+
         if isinstance(self._result, String):
             raise MdsException(f'GetMany Error: {self._result.data()}')
-        
+
         self._result = result.deserialize()
         return self._result
-    
+
     def get(self, name):
         """
         Get the result of a named expression, or raise an error if the evaluation failed.
@@ -616,11 +770,11 @@ class GetMany:
 
         if name not in self._result:
             return None
-        
+
         result = self._result[name]
         if 'value' in result:
             return result['value']
-        
+
         raise getExceptionFromError(result['error'].data())
 
 class PutMany:
@@ -630,7 +784,7 @@ class PutMany:
 
     This must be constructed with a reference to a :class:`Connection`, this be done with
     `connection.putMany()`. You can then call `append()` to add nodes/expressions to the list.
-    Once the list is complete, you must use `execute()` to send the expressions to the 
+    Once the list is complete, you must use `execute()` to send the expressions to the
     server and insert the data into each node. This will return a dictionary of the status of
     each node's operation, or you can use `checkStatus()` to check a given node.
 
@@ -641,15 +795,15 @@ class PutMany:
     pm.append('NODE_B', '$', numpy.array([1, 2, 3, 4]))
     pm.append('NODE_C', 'SerializeIn($)', Signal(data, None, dim).serialize())
     result = pm.execute()
-    
+
     gm.checkStatus('a')
     # or
     if result['a'] != 'Success':
         pass
     ```
     """
-    
-    
+
+
     def __init__(self, connection: Connection):
         self._connection = connection
         self._queries = List()
@@ -691,14 +845,16 @@ class PutMany:
             `{ NAME: ERROR_STRING } }` if there was an error.
         :rtype: :class:`Dictionary`
         :raises TimeoutError: if the network connection fails.
+        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result of PutManyExecute() is an error string, or
             if `get()` encounters an error.
         """
         result = self._connection.get('PutManyExecute($)', self._queries.serialize())
-        
+
         if isinstance(self._result, String):
             raise MDSplusException(f'PutMany Error: {self._result.data()}')
-        
+
         self._result = result.deserialize(conn=self)
         return self._result
 
@@ -714,12 +870,12 @@ class PutMany:
         """
         if self._result is None:
             raise MdsException('PutMany has not been executed, call execute() first.')
-        
+
         if node not in self._result:
             return None
 
         result = self._result[node]
         if self.result[node] != "Success":
             raise getExceptionFromError(self._result[node])
-        
+
         return self.result[node]
