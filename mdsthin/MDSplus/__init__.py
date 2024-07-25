@@ -40,6 +40,10 @@ from ..functions import *
 
 # Compatability
 
+del Connection.tcl
+del Connection.tdic
+del Connection.mdstcl
+
 from ..descriptors import Descriptor as Data
 from ..descriptors import Descriptor as DescriptorNULL
 from ..descriptors import Descriptor as EmptyData

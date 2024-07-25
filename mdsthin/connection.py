@@ -36,19 +36,35 @@ INVALID_MESSAGE_ID = 0
 
 MDSIP_VERSION = 3
 
+SSH_BACKEND_SUBPROCESS = 'subprocess'
+SSH_BACKEND_PARAMIKO   = 'paramiko'
+
 class Connection:
     """Implements an MDSip connection to an MDSplus server."""
     
-    def __init__(self, url: str, username: str = os.getlogin(), timeout: float = 60.0):
+    def __init__(self,
+        url: str,
+        timeout: float = 60.0,
+        ssh_backend: str = SSH_BACKEND_SUBPROCESS,
+        sshp_host: str = 'localhost',
+        sshp_port: int = 8000,
+        ssh_subprocess_args: list = [],
+        ssh_paramiko_options: dict = {},
+    ):
         """
         Initialize an MDSplus connection to a given URL.
 
-        The URL will be parsed as `PROTO://HOSTNAME:PORT`. The default PROTO is tcp,
-        and the default PORT is 8000.
+        The URL will be parsed as `PROTO://USERNAME@HOSTNAME:PORT`. The default PROTO is tcp,
+        the default USERNAME is `os.getlogin()`, and the default PORT is 8000.
 
         :param str url: The URL to connect to.
-        :param str username: The username to connect with, defaults to `os.getlogin()`.
         :param float timeout: The timeout for all socket operations in seconds, defaults to 10s
+        :param str sshp_host: The host to netcat to when using `sshp://`, defaults to 'localhost'.
+        :param int sshp_port: The port to netcat to when using `sshp://`, defaults to 8000.
+        :param list ssh_subprocess_args: Additional arguments to pass to the ssh subprocess
+            command line when using SSH_BACKEND_SUBPROCESS and one of the SSH protocols.
+        :param dict ssh_paramiko_options: Additional kwargs to pass to the paramiko connect()
+            function when using SSH_BACKEND_PARAMIKO and one of the SSH protocols.
         :raises TimeoutError: if the connection fails.
         :raises socket.gaierror: if the hostname could not be resolved.
         :raises MdsException: if an unsupported protocol is specified, or if the login fails.
@@ -60,20 +76,41 @@ class Connection:
         self._server_version = None
         self._compression_level = None
 
-        self._username = username
+        self._ssh_backend = ssh_backend
+        self._sshp_host = sshp_host
+        self._sshp_port = sshp_port
+        self._ssh_subprocess_args = ssh_subprocess_args
+        self._ssh_paramiko_options = ssh_paramiko_options
+
         self._host = url
         self._protocol = 'tcp'
         if '://' in self._host:
             self._protocol, self._host = self._host.split('://', maxsplit=1)
         
+        SUPPORTED_PROTOCOLS = ['tcp', 'tcp6', 'ssh', 'sshp']
+        if self._protocol not in SUPPORTED_PROTOCOLS:
+            raise MdsException(f'Only the following protocols are supported: {", ".join(SUPPORTED_PROTOCOLS)}')
+
+        # The username used for the MDSip login packet, as well as SSH if the protocol
+        # is ssh or sshp
+        self._username = os.getlogin()
+
+        if '@' in self._host:
+            # We use rsplit to allow usernames connection strings like:
+            # 'user@example.com@server:port'
+            self._username, self._host = self._host.rsplit('@', maxsplit=1)
+
+        # The MDSip default port
         self._port = 8000
+
+        if self._protocol in ['ssh', 'sshp']:
+            # If we are using SSH, the default port should be SSH's default port
+            self._port = 22
+
         if ':' in self._host:
             self._host, self._port = self._host.split(':', maxsplit=1)
             self._port = int(self._port)
 
-        if self._protocol not in ['tcp', 'tcp6']:
-            raise MdsException('Only tcp:// and tcp6:// are supported')
-        
         self.connect()
 
     def __del__(self):
@@ -96,47 +133,112 @@ class Connection:
         :raises MdsException: if the login fails.
         """
         
-        if self._protocol == 'tcp':
-            socket_family = socket.AF_INET
-            socket_type = socket.SOCK_STREAM
-        
-        elif self._protocol == 'tcp6':
-            socket_family = socket.AF_INET6
-            socket_type = socket.SOCK_STREAM
+        if self._protocol in ['tcp', 'tcp6']:
 
-        self._socket = socket.socket(socket_family, socket_type)
+            if self._protocol == 'tcp':
+                socket_family = socket.AF_INET
+                socket_type = socket.SOCK_STREAM
+            else:
+                socket_family = socket.AF_INET6
+                socket_type = socket.SOCK_STREAM
 
-        self._socket.settimeout(self._timeout)
-        
-        # This causes a massive speed increase
-        # It was designed to reduce the number of small packets on the wire, but we use
-        # small packets for a lot of things, so it only hurts us
-        self._socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        
-        # Regular MDSplus also sets SO_KEEPALIVE and SO_OOBINLINE
+            self._socket = socket.socket(socket_family, socket_type)
 
-        address_list = socket.getaddrinfo(self._host, self._port, family=socket_family, type=socket_type)
-        self._address = address_list[0][4]
+            self._socket.settimeout(self._timeout)
+            
+            # This causes a massive speed increase
+            # It was designed to reduce the number of small packets on the wire, but we use
+            # small packets for a lot of things, so it only hurts us
+            self._socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            
+            # Regular MDSplus also sets SO_KEEPALIVE and SO_OOBINLINE
 
-        self._socket.connect(self._address)
+            address_list = socket.getaddrinfo(self._host, self._port, family=socket_family, type=socket_type)
+            self._address = address_list[0][4]
 
-        mlogin = Message(String(self._username))
-        mlogin.ndims = 1
-        mlogin.dims[0] = MDSIP_VERSION
+            self._socket.connect(self._address)
 
-        self._send(mlogin)
+        elif self._protocol in ['ssh', 'sshp']:
+
+            if self._protocol == 'ssh':
+                command = '/bin/sh -l -c mdsip-server-ssh'
+            elif self._protocol == 'sshp':
+                command = f'nc {self._sshp_host} {self._sshp_port}'
+
+            if self._ssh_backend == SSH_BACKEND_SUBPROCESS:
+
+                import subprocess
+
+                self._ssh_subprocess = subprocess.Popen(
+                    ['ssh', f'{self._username}@{self._host}', f'-p{self._port}', *self._ssh_subprocess_args, command],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
+
+                class SubprocessSocket:
+                    def __init__(self, proc: subprocess.Popen):
+                        self._proc = proc
+
+                    def recv(self, size, flags):
+                        return self._proc.stdout.read(size)
+
+                    def sendall(self, buffer):
+                        self._proc.stdin.write(buffer)
+                        self._proc.stdin.flush()
+
+                    def close(self): 
+                        self._proc.terminate()
+
+                self._socket = SubprocessSocket(self._ssh_subprocess)
+
+            elif self._ssh_backend == SSH_BACKEND_PARAMIKO:
+
+                import paramiko
+
+                self._ssh_client = paramiko.client.SSHClient()
+                self._ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                self._ssh_client.connect(self._host, username=self._username, **self._ssh_paramiko_options)
+
+                class ParamikoSocket:
+                    def __init__(self, client, stdin, stdout, stderr):
+                        self._client = client
+                        self._stdin = stdin
+                        self._stdout = stdout
+                        self._stderr = stderr
+
+                    def recv(self, size, flags):
+                        return self._stdout.read(size)
+
+                    def sendall(self, buffer):
+                        self._stdin.write(buffer)
+                        self._stdin.flush()
+
+                    def close(self): 
+                        self._client.close()
+
+                stdin, stdout, stderr = self._ssh_client.exec_command(command)
+
+                self._socket = ParamikoSocket(self._ssh_client, stdin, stdout, stderr)
+
+        msg_login = Message(String(self._username))
+        msg_login.ndims = 1
+        msg_login.dims[0] = MDSIP_VERSION
+
+        self._send(msg_login)
 
         # The login response does not contain data
-        self._socket.recv_into(mlogin, ctypes.sizeof(mlogin), socket.MSG_WAITALL)
+        msg_login_buffer = self._socket.recv(ctypes.sizeof(msg_login), socket.MSG_WAITALL)
+        msg_login = Message.from_buffer_copy(msg_login_buffer)
 
-        if STATUS_NOT_OK(mlogin.status):
+        if STATUS_NOT_OK(msg_login.status):
             raise MdsException('Failed to login')
         
-        self._compression_level = (mlogin.status & 0x1E) >> 1
-        self._client_type = mlogin.client_type
+        self._compression_level = (msg_login.status & 0x1E) >> 1
+        self._client_type = msg_login.client_type
         
-        if mlogin.ndims > 0:
-            self.version = mlogin.dims[0]
+        if msg_login.ndims > 0:
+            self.version = msg_login.dims[0]
 
     def disconnect(self):
         """Close the socket."""
@@ -160,26 +262,29 @@ class Connection:
         msg = Message()
         data = Descriptor()
 
-        bytes_read = self._socket.recv_into(msg, ctypes.sizeof(msg), socket.MSG_WAITALL)
-        if bytes_read < ctypes.sizeof(msg):
+        msg_buffer = self._socket.recv(ctypes.sizeof(msg), socket.MSG_WAITALL)
+        if len(msg_buffer) < ctypes.sizeof(msg):
             raise TimeoutError
+        
+        msg = Message.from_buffer_copy(msg_buffer)
 
         data_length = msg.msglen - ctypes.sizeof(Message)
         if data_length > 0:
-            buffer = bytearray(data_length)
+            data_buffer = bytearray(data_length)
 
-            view = memoryview(buffer)
-            while len(view) > 0:
-                bytes_read = self._socket.recv_into(view, len(view), socket.MSG_WAITALL)
-                if not bytes_read:
+            data_view = memoryview(data_buffer)
+            while len(data_view) > 0:
+                chunk_buffer = self._socket.recv(len(data_view), socket.MSG_WAITALL)
+                if len(chunk_buffer) == 0:
                     break
                 
-                view = view[bytes_read : ]
+                data_view[ : len(chunk_buffer)] = chunk_buffer
+                data_view = data_view[len(chunk_buffer) : ]
 
-            if len(view) > 0:
+            if len(data_view) > 0:
                 raise TimeoutError
             
-            data = msg.unpack_data(buffer)
+            data = msg.unpack_data(data_buffer)
 
         return msg, data
 
