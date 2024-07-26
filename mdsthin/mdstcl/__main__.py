@@ -31,10 +31,68 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(prog='mdsthin.mdstcl')
 
-    parser.add_argument('server', help='Server to connect to')
+    parser.add_argument(
+        'url',
+        help='URL to connect to. Allowed protocols are `tcp://`, `tcp6://`, `ssh://` and `sshp://`, defaults to `tcp://`.'
+    )
+
+    parser.add_argument(
+        '--timeout',
+        default=None,
+        required=False,
+        help='The timeout for all socket operations in seconds, defaults to 60s.'
+    )
+
+    parser.add_argument(
+        '--verbose', '-v',
+        action='store_const',
+        const=True,
+        default=False,
+        required=False,
+        help='Enable debug logging.'
+    )
+
+    parser.add_argument(
+        '--ssh-backend',
+        default=None,
+        required=False,
+        help='The backend implementation of ssh to use. Can be either "subprocess" or "paramiko", defaults to "subprocess".'
+    )
+
+    parser.add_argument(
+        '--ssh-port',
+        default=None,
+        required=False,
+        help='The port to ssh to when using one of the SSH protocols.'
+    )
+
+    parser.add_argument(
+        '--sshp-host',
+        default=None,
+        required=False,
+        help='The host to netcat to when using `sshp://`, defaults to "localhost".'
+    )
 
     args = parser.parse_args()
+
+    kwargs = {}
+
+    if args.timeout is not None:
+        kwargs['timeout'] = args.timeout
+
+    if args.verbose:
+        kwargs['verbose'] = True
+
+    if args.ssh_backend is not None:
+        kwargs['ssh_backend'] = args.ssh_backend
+
+    if args.ssh_port is not None:
+        kwargs['ssh_port'] = args.ssh_port
+
+    if args.sshp_host is not None:
+        kwargs['sshp_host'] = args.sshp_host
     
-    print('Connecting to:', args.server)
-    c = Connection(args.server)
+    print('Connecting to:', args.url)
+    c = Connection(args.url, **kwargs)
     c.mdstcl()
+    c.disconnect()

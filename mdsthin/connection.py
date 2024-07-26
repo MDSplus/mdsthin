@@ -73,7 +73,10 @@ class Connection:
          * sshp:// - Connect over SSH to `host:ssh_port` and then spawn `nc $sshp_host $port`.
 
         :param str url: The URL to connect to.
-        :param float timeout: The timeout for all socket operations in seconds, defaults to 10s
+        :param float timeout: The timeout for all socket operations in seconds, defaults to 60s
+        :param bool verbose: Enable debug logging for this connection.
+        :param str ssh_backend: The backend implementation of ssh to use. Can be either
+            'subprocess' or 'paramiko', defaults to 'subprocess'.
         :param int ssh_port: The port to ssh to when using one of the SSH protocols.
         :param str sshp_host: The host to netcat to when using `sshp://`, defaults to 'localhost'.
         :param list ssh_subprocess_args: Additional arguments to pass to the ssh subprocess
@@ -318,6 +321,9 @@ class Connection:
                         self._stdin.flush()
 
                     def close(self):
+                        self._stdin.close()
+                        self._stdout.close()
+                        self._stderr.close()
                         self._client.close()
 
                 self._logger.debug(f'Calling paramiko.client.SSHClient.exec_command("{command}")')

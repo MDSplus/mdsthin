@@ -198,6 +198,8 @@ TCL> show current test
 TCL> exit
 ```
 
+Or use it over ssh with all of the options available in [Advanced SSH Usage](#advanced-ssh-usage), see the `--help` page for details.
+
 This can be very useful to interactively work with a tree. **Note:** any trees you open will affect the entire connection, and calling `set default xyz` will have the same effect as calling `c.setDefault('xyz')`.
 
 ## A remote `tdic` prompt using `mdsthin.tdic`
@@ -225,6 +227,8 @@ TDI> 4 + 5
 9L
 TDI> exit
 ```
+
+Or use it over ssh with all of the options available in [Advanced SSH Usage](#advanced-ssh-usage), see the `--help` page for details.
 
 ## Full MDSplus Package Compatability
 
