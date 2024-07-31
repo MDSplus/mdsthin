@@ -72,3 +72,22 @@ class CModTest(unittest.TestCase):
         data = self.conn.getObject('ADMIN.CHECKCAMAC')
 
         self.assertEqual(data, compare)
+    
+    def test_getnci(self):
+
+        tstart_fullpath = self.conn.get('getnci(TSTART, "FULLPATH")').data()
+
+        self.assertEqual(tstart_fullpath, '\\CMOD::TOP:TSTART')
+
+        all_actions = self.conn.get('getnci("***", "FULLPATH", "ACTION")').data()
+
+        self.assertEqual(len(all_actions), 1421)
+
+        all_actions_size = self.conn.get('size(getnci("***", "FULLPATH", "ACTION"))').data()
+
+        self.assertEqual(len(all_actions), all_actions_size)
+
+        all_actions_status = self.conn.get('getnci("***", "STATUS", "ACTION")').data()
+
+        first10 = [1, 1, 1, 1, 1, 0, 0, 0, 0, 1]
+        self.assertListEqual(all_actions_status[ : 10 ].tolist(), first10)

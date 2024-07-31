@@ -532,7 +532,7 @@ class DescriptorS(Descriptor):
         return bytearray(self._data.tobytes())
     
     @staticmethod
-    def unpack_data(dtype_id, buffer):
+    def unpack_data(dtype_id, buffer, length=0):
         """
         Unpack just the data, along with a given `dtype_id` in lieu of a full `mdsdsc_s_t.
         This is overridden by some subclasses.
@@ -549,7 +549,10 @@ class DescriptorS(Descriptor):
             data = numpy.frombuffer(buffer, dtype=numpy_dtype, count=1)[0]
 
         elif dtype_id == DTYPE_T:
-            data = buffer.decode('ascii')
+            if length > 0:
+                data = buffer[ : length ].decode('ascii')
+            else:
+                data = buffer.decode('ascii')
 
         return dtype_class(data)
 
@@ -573,7 +576,10 @@ class String(DescriptorS):
         return bytearray(self._data.encode('ascii'))
     
     @staticmethod
-    def unpack_data(buffer):
+    def unpack_data(buffer, length=0):
+        if length > 0:
+            return String(buffer[ : length ].decode('ascii'))
+        
         return String(buffer.decode('ascii'))
 
 class Ident(DescriptorS):
@@ -595,7 +601,10 @@ class Ident(DescriptorS):
         return bytearray(self._data.encode('ascii'))
     
     @staticmethod
-    def unpack_data(buffer):
+    def unpack_data(buffer, length=0):
+        if length > 0:
+            return Ident(buffer[ : length ].decode('ascii'))
+        
         return Ident(buffer.decode('ascii'))
 
 class TreeNID(DescriptorS):
@@ -617,6 +626,7 @@ class TreeNID(DescriptorS):
     def __repr__(self):
         if self._conn is not None:
             return self._conn.get(f'getnci({self._data}, "FULLPATH")').data()
+        
         return f'NID({self._data})'
 
 class TreePath(DescriptorS):
@@ -641,7 +651,10 @@ class TreePath(DescriptorS):
         return bytearray(self._data.encode('ascii'))
     
     @staticmethod
-    def unpack_data(buffer):
+    def unpack_data(buffer, length=0):
+        if length > 0:
+            return String(buffer[ : length ].decode('ascii'))
+    
         return String(buffer.decode('ascii'))
 
 class UInt8(DescriptorS, Numeric):
@@ -921,11 +934,18 @@ class DescriptorA(Descriptor):
         return bytearray(self._data.tobytes())
     
     @staticmethod
-    def unpack_data(dtype_id, buffer, dims=[]):
+    def unpack_data(dtype_id, buffer, dims=[], length=0):
         dtype_class = DTYPE_CLASS_MAP[CLASS_A][dtype_id]
-        numpy_dtype = NUMPY_DTYPE_MAP[dtype_id]
 
-        data = numpy.frombuffer(buffer, dtype=numpy_dtype)
+        if dtype_id in NUMPY_DTYPE_MAP:
+            numpy_dtype = NUMPY_DTYPE_MAP[dtype_id]
+            data = numpy.frombuffer(buffer, dtype=numpy_dtype)
+
+        elif dtype_id == DTYPE_T:
+            data = numpy.frombuffer(buffer, dtype=f'|S{length}').astype(str)
+
+        else:
+            raise MdsException(f'Unable to unpack array data with {dtype_to_string(dtype_id)}')
         
         if len(dims) > 0:
             data = data.reshape(dims[::-1])

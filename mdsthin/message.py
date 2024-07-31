@@ -115,7 +115,7 @@ class Message(MsgHdr):
             dtype_id = DTYPE_FTC
         
         if self.ndims > 0:
-            return DescriptorA.unpack_data(dtype_id, buffer, dims=self.dims[: self.ndims])
+            return DescriptorA.unpack_data(dtype_id, buffer, dims=self.dims[: self.ndims], length=self.length)
             
         else:
-            return DescriptorS.unpack_data(dtype_id, buffer)
+            return DescriptorS.unpack_data(dtype_id, buffer, length=self.length)
