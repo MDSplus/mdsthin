@@ -112,24 +112,23 @@ class Connection:
         self._ssh_paramiko_options = ssh_paramiko_options
 
         self._host = url
-        self._protocol = 'tcp'
+
         if '://' in self._host:
             self._protocol, self._host = self._host.split('://', maxsplit=1)
+        else:
+            self._protocol = 'tcp'
 
         SUPPORTED_PROTOCOLS = ['tcp', 'tcp6', 'ssh', 'sshp']
         if self._protocol not in SUPPORTED_PROTOCOLS:
             raise MdsException(f'Only the following protocols are supported: {", ".join(SUPPORTED_PROTOCOLS)}')
 
-        # The username used for the MDSip login packet, and SSH if the protocol is `ssh://` or `sshp://`
-        self._username = os.getlogin()
-
         if '@' in self._host:
             # We use rsplit to allow usernames connection strings like:
             # 'user@example.com@server:port'
             self._username, self._host = self._host.rsplit('@', maxsplit=1)
-
-        # The MDSip default port
-        self._port = 8000
+        else:
+            # The username used for the MDSip login packet, and SSH if the protocol is `ssh://` or `sshp://`
+            self._username = os.getlogin()
 
         if ':' in self._host:
             self._host, self._port = self._host.split(':', maxsplit=1)
@@ -137,7 +136,9 @@ class Connection:
 
             if self._protocol == 'ssh' and self._ssh_port is None:
                 self._ssh_port = self._port
-
+        else:
+            # The MDSip default port
+            self._port = 8000
         self.connect()
 
     def __del__(self):

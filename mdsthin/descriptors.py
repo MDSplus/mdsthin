@@ -653,9 +653,9 @@ class TreePath(DescriptorS):
     @staticmethod
     def unpack_data(buffer, length=0):
         if length > 0:
-            return String(buffer[ : length ].decode('ascii'))
+            return TreePath(buffer[ : length ].decode('ascii'))
     
-        return String(buffer.decode('ascii'))
+        return TreePath(buffer.decode('ascii'))
 
 class UInt8(DescriptorS, Numeric):
     def __init__(self, data=0):
