@@ -28,6 +28,7 @@ import sys
 import time
 import ctypes
 import socket
+import getpass
 import logging
 
 from .message import *
@@ -128,7 +129,7 @@ class Connection:
             self._username, self._host = self._host.rsplit('@', maxsplit=1)
         else:
             # The username used for the MDSip login packet, and SSH if the protocol is `ssh://` or `sshp://`
-            self._username = os.getlogin()
+            self._username = getpass.getuser()
 
         if ':' in self._host:
             self._host, self._port = self._host.split(':', maxsplit=1)
