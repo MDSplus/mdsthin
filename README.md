@@ -16,6 +16,10 @@ python3 -m pip install mdsthin
 
 See the [`examples`](examples/) folder.
 
+### Experimental Features
+
+See [`Experimental.md`](Experimental.md) for more information.
+
 ## Tests
 
 You can run the full test suite with:
