@@ -27,13 +27,16 @@ import unittest
 
 from . import *
 
-def run_mdsthin_tests(server=None, cmod_tests=False, **kwargs):
+def run_mdsthin_tests(server=None, cmod_tests=False, write_tests=False, **kwargs):
         
     if server is not None:
         ConnectionTest.SERVER = server
 
         if cmod_tests:
             CModTest.SERVER = server
-            
+
+    if write_tests:
+        WriteTest.ENABLED = True
+
     unittest.main(**kwargs)
     

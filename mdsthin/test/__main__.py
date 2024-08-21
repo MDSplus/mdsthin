@@ -45,6 +45,13 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '--write',
+        default=False,
+        action='store_const', const=True,
+        help='Run Write tests by spinning up a local mdsip server'
+    )
+
+    parser.add_argument(
         'unittest',
         nargs='*',
         help='Arguments to unittest.main()'
@@ -55,6 +62,7 @@ if __name__ == '__main__':
     run_mdsthin_tests(
         server=args.server,
         cmod_tests=args.cmod,
+        write_tests=args.write,
         # unittest arguments
         argv=[ parser.prog, *extra],
     )

@@ -796,6 +796,8 @@ class PutMany:
     server and insert the data into each node. This will return a dictionary of the status of
     each node's operation, or you can use `checkStatus()` to check a given node.
 
+    If you wish to store the result of an expression in a node, you must prefix the expression with '`'.
+
     Example:
     ```
     pm = c.putMany()
