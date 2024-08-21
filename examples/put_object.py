@@ -18,4 +18,4 @@ a = mdsthin.Action(
     None
 )
 
-a = c.put('DO_THING', 'SerializeIn($)', a.serialize())
+c.put('DO_THING', 'SerializeIn($)', a.serialize())

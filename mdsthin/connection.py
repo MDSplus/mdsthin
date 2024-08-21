@@ -389,7 +389,7 @@ class Connection:
 
         buffer = msg.pack()
 
-        self._logger.debug(f'Sending packet with dtype_id={dtype_to_string(msg.dtype_id)} msglen={msg.msglen}')
+        self._logger.debug(f'Sending packet with msglen={msg.msglen} dtype_id={dtype_to_string(msg.dtype_id)} length={msg.length} dimct={msg.ndims} dims={list(msg.dims)}')
         self._socket.sendall(buffer)
 
     def _recv(self):
@@ -403,7 +403,7 @@ class Connection:
 
         msg = Message.from_buffer_copy(msg_buffer)
 
-        self._logger.debug(f'Received message with dtype_id={dtype_to_string(msg.dtype_id)} msglen={msg.msglen}')
+        self._logger.debug(f'Received message with msglen={msg.msglen} dtype_id={dtype_to_string(msg.dtype_id)} length={msg.length} dimct={msg.ndims} dims={list(msg.dims)}')
 
         data_length = msg.msglen - ctypes.sizeof(Message)
         if data_length > 0:

@@ -69,7 +69,7 @@ class Message(MsgHdr):
                 raise Exception('Only able to send CLASS_S and CLASS_A descriptors, use `SerializeIn`')
             
             self.buffer = dsc.pack_data()
-            self.length = len(self.buffer)
+            self.length = dsc.length
             self.dtype_id = dsc.dtype_id
 
             if isinstance(dsc, DescriptorA):
