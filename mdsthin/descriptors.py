@@ -887,6 +887,15 @@ class DescriptorA(Descriptor):
         # numpy.array(bool).any()
         return (self.data() != other).any()
     
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return self._data.__iter__()
+
+    def __getitem__(self, index):
+        return self._data[index]
+    
     @property
     def scale(self):
         """mdsdsc_a_t.scale"""
@@ -999,6 +1008,12 @@ class StringArray(DescriptorA):
         # numpy.array(bool).any()
         return (self.data().astype(str) != other.astype(str)).any()
 
+    def __iter__(self):
+        return self.data().__iter__()
+
+    def __getitem__(self, index):
+        return self.data()[index]
+    
     def data(self):
         tmp = self._data.astype(str).flatten()
 

@@ -18,4 +18,5 @@ a = mdsthin.Action(
     None
 )
 
-c.put('DO_THING', 'SerializeIn($)', a.serialize())
+# Without the `, it will put the actual SerializeIn call into the node, instead of the resulting Action
+c.put('DO_THING', '`SerializeIn($)', a.serialize())

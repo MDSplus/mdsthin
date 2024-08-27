@@ -16,4 +16,5 @@ times = numpy.array(list(range(10)))
 sig = mdsthin.Signal(data, None, times)
 
 # Signals cannot be written directly like scalars or arrays, so we need to serialize/deserialize it
-c.put('SIG', 'SerializeIn($)', sig.serialize())
+# Without the `, it will put the actual SerializeIn call into the node, instead of the resulting Signal
+c.put('SIG', '`SerializeIn($)', sig.serialize())

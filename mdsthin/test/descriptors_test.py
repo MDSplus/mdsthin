@@ -302,6 +302,42 @@ class DescriptorsTest(unittest.TestCase):
         self.assertEqual(data, { 'a': 1, 'b': 5, 'c': 3, 'd': 4 })
         self.assertEqual(data.data(), { 'a': 1, 'b': 5, 'c': 3, 'd': 4 })
 
+    def test_arrays(self):
+        
+        INTEGER_ARRAY = [ 2, 4, 6 ]
+        FLOAT_ARRAY = [ 1.0, 1.1, 1.2 ]
+
+        tests = [
+            { 'value': UInt32Array(list(range(100))), 'length': 100 },
+
+            { 'value': UInt8Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': UInt16Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': UInt32Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': UInt64Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': Int8Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': Int16Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': Int32Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': Int64Array(INTEGER_ARRAY), 'length': 3 },
+            { 'value': Float32Array(FLOAT_ARRAY), 'length': 3 },
+            { 'value': Float64Array(FLOAT_ARRAY), 'length': 3 },
+
+            { 'value': StringArray(['one', 'seven', 'nineteen']), 'length': 3 },
+        ]
+
+        for info in tests:
+            name = repr(type(info['value'])) + f"({info['length']})"
+            with self.subTest(name):
+
+                self.assertEqual(len(info['value']), info['length'])
+
+                data = info['value'].data()
+                
+                for i in range(info['length']):
+                    self.assertEqual(info['value'][i], data[i])
+                
+                for a, b in zip(info['value'], data):
+                    self.assertEqual(a, b)
+
     def test_record_types(self):
 
         # Signal
