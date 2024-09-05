@@ -502,7 +502,7 @@ class Connection:
         """
         args = [path, expr] + list(args)
         args_format = ','.join('$' * len(args))
-        status = self.get(f'TreePut({args_format})', *args)
+        status = self.get(f'TreePut({args_format})', *args).data()
 
         if STATUS_NOT_OK(status):
             raise getException(status)

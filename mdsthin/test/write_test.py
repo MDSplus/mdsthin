@@ -46,7 +46,6 @@ class WriteTest(unittest.TestCase):
 
             # Attempt to find the mdsip executable
             mdsip = shutil.which('mdsip')
-            
             if mdsip is None:
                 cls.ENABLED = False
 
@@ -94,10 +93,9 @@ class WriteTest(unittest.TestCase):
             cls.conn.tcl("add node sig /usage=signal")
             cls.conn.tcl("write")
             cls.conn.tcl("close")
+            cls.conn.tcl("set tree thintest /shot=-1")
+            cls.conn.tcl("create pulse 1") # The readonly tree
 
-            # Open a normal connection for the tests to use
-            cls.conn.openTree('thintest', -1)
-        
         super().setUpClass()
 
     @classmethod
@@ -116,6 +114,9 @@ class WriteTest(unittest.TestCase):
                 os.path.join(cls.tempdir, 'thintest_model.tree'),
                 os.path.join(cls.tempdir, 'thintest_model.datafile'),
                 os.path.join(cls.tempdir, 'thintest_model.characteristics'),
+                os.path.join(cls.tempdir, 'thintest_001.tree'),
+                os.path.join(cls.tempdir, 'thintest_001.datafile'),
+                os.path.join(cls.tempdir, 'thintest_001.characteristics'),
             ]
 
             for file in files:
@@ -132,6 +133,9 @@ class WriteTest(unittest.TestCase):
     def setUp(self):
         if not self.ENABLED:
             raise unittest.SkipTest('--write was not specified or it was unable to find mdsip executable')
+        
+        # Open a tree for the tests to use
+        self.conn.openTree('thintest', -1)
 
     def test_numeric(self):
 
@@ -227,3 +231,25 @@ class WriteTest(unittest.TestCase):
         self.assertEqual(self.conn.get('num'), Int32(42))
         self.assertEqual(self.conn.get('str'), String("Hello, World!"))
         self.assertEqual(self.conn.getObject('nusigm'), Signal(1, 2, 3))
+
+    def test_permissions(self):
+        import platform
+
+        if platform.system() == 'Windows':
+            raise unittest.SkipTest('Disabled on Windows')
+        
+        # Change all the readonly tree files to be readonly
+        filenames = [
+            os.path.join(self.tempdir, 'thintest_001.tree'),
+            os.path.join(self.tempdir, 'thintest_001.datafile'),
+            os.path.join(self.tempdir, 'thintest_001.characteristics'),
+        ]
+        for filename in filenames:
+            os.chmod(filename, 0o400)
+
+        # Open the readonly tree
+        self.conn.openTree('thintest', 1)
+
+        self.assertRaises(TreeFAILURE, self.conn.put, 'num', '42')
+
+        self.conn.closeTree('thintest', 1)
