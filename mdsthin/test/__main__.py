@@ -38,6 +38,13 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '--ssh',
+        default=False,
+        action='store_const', const=True,
+        help='Run SSH test cases by connecting to the --server over SSH'
+    )
+
+    parser.add_argument(
         '--cmod',
         default=False,
         action='store_const', const=True,
@@ -61,6 +68,7 @@ if __name__ == '__main__':
 
     run_mdsthin_tests(
         server=args.server,
+        ssh_tests=args.ssh,
         cmod_tests=args.cmod,
         write_tests=args.write,
         # unittest arguments
