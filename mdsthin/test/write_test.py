@@ -48,6 +48,7 @@ class WriteTest(unittest.TestCase):
             mdsip = shutil.which('mdsip')
             if mdsip is None:
                 cls.ENABLED = False
+                return
 
             # Generate a temporary directory for our config and tree files
             cls.tempdir = tempfile.mkdtemp('-mdsthin-write-test')

@@ -23,6 +23,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import getpass
 import unittest
 
 from ..connection import *
@@ -31,13 +32,27 @@ from ..functions import *
 class ConnectionTest(unittest.TestCase):
 
     SERVER = ''
+    PORT = None
+    USERNAME = None
     TIMEOUT = 5
     SSH_ENABLED = False
 
     @classmethod
     def setUpClass(cls):
         if cls.SERVER != '':
-            cls.conn = Connection(cls.SERVER)
+            url = cls.SERVER
+
+            if cls.USERNAME is not None:
+                url = f'{cls.USERNAME}@{url}'
+            else:
+                cls.USERNAME = getpass.getuser()
+
+            if cls.PORT is not None:
+                url = f'{url}:{cls.PORT}'
+            else:
+                cls.PORT = 8000
+
+            cls.conn = Connection(url)
 
     def setUp(self):
         if self.SERVER == '':
@@ -127,31 +142,34 @@ class ConnectionTest(unittest.TestCase):
         if not self.SSH_ENABLED:
             raise unittest.SkipTest('--ssh was not specified')
 
-        url = f'ssh://{self.SERVER}'
-        with Connection(url, timeout=self.TIMEOUT) as test_conn:
-            whoami = test_conn.get('whoami()').data()
-            self.assertEqual(
-                whoami, getpass.getuser(),
-                f'Connection("{url}") failed'
-            )
+        # We can only test a connection string without a username if the username is default
+        if self.USERNAME == getpass.getuser():
+            url = f'ssh://{self.SERVER}'
+            with Connection(url, timeout=self.TIMEOUT) as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, self.USERNAME,
+                    f'Connection("{url}") failed'
+                )
 
-        url = f'ssh://{getpass.getuser()}@{self.SERVER}'
+        url = f'ssh://{self.USERNAME}@{self.SERVER}'
         with Connection(url, timeout=self.TIMEOUT, ssh_port=22) as test_conn:
             whoami = test_conn.get('whoami()').data()
             self.assertEqual(
-                whoami, getpass.getuser(),
+                whoami, self.USERNAME,
                 f'Connection("{url}", ssh_port=22) failed'
             )
 
-        url = f'ssh://{getpass.getuser()}@{self.SERVER}:22'
+        url = f'ssh://{self.USERNAME}@{self.SERVER}:22'
         with Connection(url, timeout=self.TIMEOUT) as test_conn:
             whoami = test_conn.get('whoami()').data()
             self.assertEqual(
-                whoami, getpass.getuser(),
+                whoami, self.USERNAME,
                 f'Connection("{url}") failed'
             )
 
         # TODO: Test ssh_subprocess_args
+        # TODO: Test plink
 
     def test_ssh_paramiko(self):
         if not self.SSH_ENABLED:
@@ -161,30 +179,33 @@ class ConnectionTest(unittest.TestCase):
             import warnings
 
             # Silence the cryptography deprecation warnings from simply importing paramiko
-            with warnings.catch_warnings(action='ignore'):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
                 import paramiko
 
-            url = f'ssh://{self.SERVER}'
-            with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
-                whoami = test_conn.get('whoami()').data()
-                self.assertEqual(
-                    whoami, getpass.getuser(),
-                    f'Connection("{url}", ssh_backend="paramiko") failed'
-                )
+            # We can only test a connection string without a username if the username is default
+            if self.USERNAME == getpass.getuser():
+                url = f'ssh://{self.SERVER}'
+                with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
+                    whoami = test_conn.get('whoami()').data()
+                    self.assertEqual(
+                        whoami, self.USERNAME,
+                        f'Connection("{url}", ssh_backend="paramiko") failed'
+                    )
 
-            url = f'ssh://{getpass.getuser()}@{self.SERVER}'
+            url = f'ssh://{self.USERNAME}@{self.SERVER}'
             with Connection(url, timeout=self.TIMEOUT, ssh_port=22, ssh_backend='paramiko') as test_conn:
                 whoami = test_conn.get('whoami()').data()
                 self.assertEqual(
-                    whoami, getpass.getuser(),
+                    whoami, self.USERNAME,
                     f'Connection("{url}", ssh_port=22, ssh_backend="paramiko") failed'
                 )
 
-            url = f'ssh://{getpass.getuser()}@{self.SERVER}:22'
+            url = f'ssh://{self.USERNAME}@{self.SERVER}:22'
             with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
                 whoami = test_conn.get('whoami()').data()
                 self.assertEqual(
-                    whoami, getpass.getuser(),
+                    whoami, self.USERNAME,
                     f'Connection("{url}", ssh_backend="paramiko") failed'
                 )
 
@@ -197,37 +218,43 @@ class ConnectionTest(unittest.TestCase):
         if not self.SSH_ENABLED:
             raise unittest.SkipTest('--ssh was not specified')
 
-        url = f'sshp://{self.SERVER}'
+        # We can only test a connection string without a username if the username is default
+        if self.USERNAME == getpass.getuser():
+            url = f'sshp://{self.SERVER}'
+            with Connection(url, timeout=self.TIMEOUT) as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, self.USERNAME,
+                    f'Connection("{url}") failed'
+                )
+
+        # We can only test a connection string without a port if the port is 8000
+        if self.PORT == 8000:
+            url = f'sshp://{self.USERNAME}@{self.SERVER}'
+            with Connection(url, timeout=self.TIMEOUT, ssh_port=22) as test_conn:
+                whoami = test_conn.get('whoami()').data()
+                self.assertEqual(
+                    whoami, self.USERNAME,
+                    f'Connection("{url}", ssh_port=22) failed'
+                )
+
+        url = f'sshp://{self.USERNAME}@{self.SERVER}:{self.PORT}'
         with Connection(url, timeout=self.TIMEOUT) as test_conn:
             whoami = test_conn.get('whoami()').data()
             self.assertEqual(
-                whoami, getpass.getuser(),
+                whoami, self.USERNAME,
                 f'Connection("{url}") failed'
             )
 
-        url = f'sshp://{getpass.getuser()}@{self.SERVER}'
+        url = f'sshp://{self.USERNAME}@{self.SERVER}:{self.PORT}'
         with Connection(url, timeout=self.TIMEOUT, ssh_port=22) as test_conn:
             whoami = test_conn.get('whoami()').data()
             self.assertEqual(
-                whoami, getpass.getuser(),
+                whoami, self.USERNAME,
                 f'Connection("{url}", ssh_port=22) failed'
             )
-
-        url = f'sshp://{getpass.getuser()}@{self.SERVER}:8000'
-        with Connection(url, timeout=self.TIMEOUT) as test_conn:
-            whoami = test_conn.get('whoami()').data()
-            self.assertEqual(
-                whoami, getpass.getuser(),
-                f'Connection("{url}") failed'
-            )
-
-        url = f'sshp://{getpass.getuser()}@{self.SERVER}:8000'
-        with Connection(url, timeout=self.TIMEOUT, ssh_port=22) as test_conn:
-            whoami = test_conn.get('whoami()').data()
-            self.assertEqual(
-                whoami, getpass.getuser(),
-                f'Connection("{url}", ssh_port=22) failed'
-            )
+            
+        # TODO: Test plink
 
     def test_sshp_paramiko(self):
         if not self.SSH_ENABLED:
@@ -237,38 +264,43 @@ class ConnectionTest(unittest.TestCase):
             import warnings
 
             # Silence the cryptography deprecation warnings from simply importing paramiko
-            with warnings.catch_warnings(action='ignore'):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
                 import paramiko
 
-            url = f'sshp://{self.SERVER}'
+            # We can only test a connection string without a username if the username is default
+            if self.USERNAME == getpass.getuser():
+                url = f'sshp://{self.SERVER}'
+                with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
+                    whoami = test_conn.get('whoami()').data()
+                    self.assertEqual(
+                        whoami, self.USERNAME,
+                        f'Connection("{url}", ssh_backend="paramiko") failed'
+                    )
+
+            # We can only test a connection string without a port if the port is 8000
+            if self.PORT == 8000:
+                url = f'sshp://{self.USERNAME}@{self.SERVER}'
+                with Connection(url, timeout=self.TIMEOUT, ssh_port=22, ssh_backend='paramiko') as test_conn:
+                    whoami = test_conn.get('whoami()').data()
+                    self.assertEqual(
+                        whoami, self.USERNAME,
+                        f'Connection("{url}", ssh_port=22, ssh_backend="paramiko") failed'
+                    )
+
+            url = f'sshp://{self.USERNAME}@{self.SERVER}:{self.PORT}'
             with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
                 whoami = test_conn.get('whoami()').data()
                 self.assertEqual(
-                    whoami, getpass.getuser(),
+                    whoami, self.USERNAME,
                     f'Connection("{url}", ssh_backend="paramiko") failed'
                 )
 
-            url = f'sshp://{getpass.getuser()}@{self.SERVER}'
+            url = f'sshp://{self.USERNAME}@{self.SERVER}:{self.PORT}'
             with Connection(url, timeout=self.TIMEOUT, ssh_port=22, ssh_backend='paramiko') as test_conn:
                 whoami = test_conn.get('whoami()').data()
                 self.assertEqual(
-                    whoami, getpass.getuser(),
-                    f'Connection("{url}", ssh_port=22, ssh_backend="paramiko") failed'
-                )
-
-            url = f'sshp://{getpass.getuser()}@{self.SERVER}:8000'
-            with Connection(url, timeout=self.TIMEOUT, ssh_backend='paramiko') as test_conn:
-                whoami = test_conn.get('whoami()').data()
-                self.assertEqual(
-                    whoami, getpass.getuser(),
-                    f'Connection("{url}", ssh_backend="paramiko") failed'
-                )
-
-            url = f'sshp://{getpass.getuser()}@{self.SERVER}:8000'
-            with Connection(url, timeout=self.TIMEOUT, ssh_port=22, ssh_backend='paramiko') as test_conn:
-                whoami = test_conn.get('whoami()').data()
-                self.assertEqual(
-                    whoami, getpass.getuser(),
+                    whoami, self.USERNAME,
                     f'Connection("{url}", ssh_port=22, ssh_backend="paramiko") failed'
                 )
 

@@ -38,6 +38,18 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '--port',
+        default=None,
+        help='Port to connect to'
+    )
+
+    parser.add_argument(
+        '--username',
+        default=None,
+        help='Username to connect with'
+    )
+
+    parser.add_argument(
         '--ssh',
         default=False,
         action='store_const', const=True,
@@ -68,6 +80,8 @@ if __name__ == '__main__':
 
     run_mdsthin_tests(
         server=args.server,
+        port=args.port,
+        username=args.username,
         ssh_tests=args.ssh,
         cmod_tests=args.cmod,
         write_tests=args.write,

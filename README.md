@@ -292,15 +292,15 @@ c = mdsthin.Connection('sshp://username@server')
 
 # Specify a custom port for SSH
 # This will run `ssh server -p2222 "nc localhost 8000"`
-c = mdsthin.Connection('ssh://server', ssh_port=2222)
+c = mdsthin.Connection('sshp://server', ssh_port=2222)
 
 # Specify a custom port for MDSip
 # This will run `ssh server "nc localhost 8123"`
-c = mdsthin.Connection('ssh://server:8123')
+c = mdsthin.Connection('sshp://server:8123')
 
 # Specify a custom host for MDSip
 # This will run `ssh proxy-server "nc server 8000"`
-c = mdsthin.Connection('ssh://proxy-server', sshp_host='server')
+c = mdsthin.Connection('sshp://proxy-server', sshp_host='server')
 
 # All together now!
 # This will run `ssh proxy-server -p2222 "nc server 8123"`
@@ -322,6 +322,17 @@ c = mdsthin.Connection('ssh://server', ssh_backend='subprocess')
 # Specify additional SSH command line options
 c = mdsthin.Connection('ssh://server',
     ssh_subprocess_args=['-i', '/path/to/private/key'])
+```
+
+When using the `subprocess` backend on Windows, you can force the use of `plink.exe` instead of `ssh.exe` by passing `ssh_use_plink=True`. However, you will very likely need to pass `ssh_subprocess_args` to inform `plink.exe` of your SSH key location.
+
+```py
+# Attempt to use plink.exe instead of ssh.exe
+c = mdsthin.Connection('ssh://server', ssh_use_plink=True)
+
+# Pass a Putty SSH Key (PPK) to plink.exe
+c = mdsthin.Connection('ssh://server', ssh_use_plink=True,
+    ssh_subprocess_args=['-i', '/path/to/private/key.ppk'])
 ```
 
 ### Using the `paramiko` backend

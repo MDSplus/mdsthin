@@ -54,6 +54,7 @@ class Connection:
         sshp_host: str = 'localhost',
         ssh_subprocess_args: list = None,
         ssh_paramiko_options: dict = None,
+        ssh_use_plink: bool = False,
     ):
         """
         Initialize an MDSplus connection to a given URL.
@@ -84,6 +85,9 @@ class Connection:
             command line when using `SSH_BACKEND_SUBPROCESS` and one of the SSH protocols.
         :param dict ssh_paramiko_options: Additional kwargs to pass to the paramiko connect()
             function when using `SSH_BACKEND_PARAMIKO` and one of the SSH protocols.
+        :param bool ssh_use_plink: Attempt to use `plink.exe -batch` instead of `ssh.exe`
+            for ssh:// and sshp:// connections. Remember to use `ssh_subprocess_args` to pass any
+            necessary arguments.
         :raises TimeoutError: if the connection fails.
         :raises BrokenPipeError: if the SSH subprocess fails.
         :raises OSError: if the paramiko socket wrapper fails.
@@ -111,6 +115,7 @@ class Connection:
         self._sshp_host = sshp_host
         self._ssh_subprocess_args = ssh_subprocess_args
         self._ssh_paramiko_options = ssh_paramiko_options
+        self._ssh_use_plink = ssh_use_plink
 
         self._host = url
 
@@ -202,18 +207,33 @@ class Connection:
 
             if self._ssh_backend == SSH_BACKEND_SUBPROCESS:
 
-                # TODO: Support plink fallback for windows
-
+                import shutil
                 import subprocess
 
-                ssh_command = ['ssh', f'{self._username}@{self._host}']
+                if self._ssh_use_plink:
+                    ssh = shutil.which('plink')
+                    if ssh is None:
+                        raise Exception('Unable to find plink.exe')
+                else:
+                    ssh = shutil.which('ssh')
+                    if ssh is None:
+                        raise Exception('Unable to find ssh command')
+
+                ssh_command = [ssh]
 
                 if self._ssh_port is not None:
-                    ssh_command.append(f'-p{self._ssh_port}')
+                    if self._ssh_use_plink:
+                        ssh_command.append(f'-P{self._ssh_port}')
+                    else:
+                        ssh_command.append(f'-p{self._ssh_port}')
+
+                if self._ssh_use_plink:
+                    ssh_command.append('-batch')
 
                 if self._ssh_subprocess_args is not None:
                     ssh_command.extend(self._ssh_subprocess_args)
                 
+                ssh_command.append(f'{self._username}@{self._host}')
                 ssh_command.append(command)
 
                 ssh_command_print = [ f'"{v}"' if ' ' in v else v for v in ssh_command ]
@@ -254,6 +274,10 @@ class Connection:
                     def recv(self, size, flags):
                         with SubprocessTimeout(self._proc, self._timeout):
                             return self._proc.stdout.read(size)
+                        
+                    def recv_into(self, buffer, size, flags):
+                        buffer[ : size] = self.recv(size, flags)
+                        return size
 
                     def sendall(self, buffer):
                         with SubprocessTimeout(self._proc, self._timeout):
@@ -288,7 +312,8 @@ class Connection:
                 import warnings
 
                 # Silence the cryptography deprecation warnings from simply importing paramiko
-                with warnings.catch_warnings(action='ignore'):
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
                     import paramiko
 
                 paramiko_options = {
@@ -317,6 +342,10 @@ class Connection:
 
                     def recv(self, size, flags):
                         return self._stdout.read(size)
+                        
+                    def recv_into(self, buffer, size, flags):
+                        buffer[ : size] = self.recv(size, flags)
+                        return size
 
                     def sendall(self, buffer):
                         self._stdin.write(buffer)
@@ -355,9 +384,11 @@ class Connection:
 
         # The login response packet is a copy of the login request packet with a few fields changed,
         # so if we process it with self._recv it will wait for data that will never come
-        msg_login_buffer = self._socket.recv(ctypes.sizeof(msg_login), socket.MSG_WAITALL)
-        if len(msg_login_buffer) == 0:
-            raise MdsException('Failed to connect to server')
+        msg_login_buffer = bytearray(ctypes.sizeof(msg_login))
+        msg_login_view = memoryview(msg_login_buffer)
+        while len(msg_login_view) > 0:
+            bytes_read = self._socket.recv_into(msg_login_view, len(msg_login_view), 0)
+            msg_login_view = msg_login_view[bytes_read : ]
         
         msg_login = Message.from_buffer_copy(msg_login_buffer)
 
@@ -397,31 +428,25 @@ class Connection:
         msg = Message()
         data = Descriptor()
 
-        msg_buffer = self._socket.recv(ctypes.sizeof(msg), socket.MSG_WAITALL)
-        if len(msg_buffer) < ctypes.sizeof(msg):
-            raise TimeoutError
+        msg_buffer = bytearray(ctypes.sizeof(msg))
+        msg_view = memoryview(msg_buffer)
+        while len(msg_view) > 0:
+            bytes_read = self._socket.recv_into(msg_view, len(msg_view), 0)
+            msg_view = msg_view[bytes_read : ]
 
         msg = Message.from_buffer_copy(msg_buffer)
 
         self._logger.debug(f'Received message with msglen={msg.msglen} dtype_id={dtype_to_string(msg.dtype_id)} length={msg.length} dimct={msg.ndims} dims={list(msg.dims)}')
 
-        data_length = msg.msglen - ctypes.sizeof(Message)
+        data_length = msg.msglen - ctypes.sizeof(msg)
         if data_length > 0:
             data_buffer = bytearray(data_length)
-
             data_view = memoryview(data_buffer)
             while len(data_view) > 0:
-                chunk_buffer = self._socket.recv(len(data_view), socket.MSG_WAITALL)
-                if len(chunk_buffer) == 0:
-                    break
+                bytes_read = self._socket.recv_into(data_view, len(data_view), 0)
+                data_view = data_view[bytes_read : ]
 
-                self._logger.debug(f'Received data packet of {len(chunk_buffer)} bytes, {len(data_view)}/{data_length}')
-
-                data_view[ : len(chunk_buffer)] = chunk_buffer
-                data_view = data_view[len(chunk_buffer) : ]
-
-            if len(data_view) > 0:
-                raise TimeoutError
+                self._logger.debug(f'Received data packet of {bytes_read} bytes, {data_length - len(data_view)}/{data_length}')
 
             data = msg.unpack_data(data_buffer)
 

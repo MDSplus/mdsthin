@@ -27,16 +27,20 @@ import unittest
 
 from . import *
 
-def run_mdsthin_tests(server=None, ssh_tests=False, cmod_tests=False, write_tests=False, **kwargs):
+def run_mdsthin_tests(server=None, port=None, username=None, ssh_tests=False, cmod_tests=False, write_tests=False, **kwargs):
         
     if server is not None:
         ConnectionTest.SERVER = server
+        ConnectionTest.USERNAME = username
+        ConnectionTest.PORT = port
 
         if ssh_tests:
             ConnectionTest.SSH_ENABLED = True
 
         if cmod_tests:
             CModTest.SERVER = server
+            CModTest.USERNAME = username
+            CModTest.PORT = port
 
     if write_tests:
         WriteTest.ENABLED = True

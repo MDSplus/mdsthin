@@ -24,6 +24,7 @@
 #
 
 import numpy
+import getpass
 import unittest
 
 from ..connection import *
@@ -36,7 +37,19 @@ class CModTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if cls.SERVER != '':
-            cls.conn = Connection(cls.SERVER)
+            url = cls.SERVER
+
+            if cls.USERNAME is not None:
+                url = f'{cls.USERNAME}@{url}'
+            else:
+                cls.USERNAME = getpass.getuser()
+
+            if cls.PORT is not None:
+                url = f'{url}:{cls.PORT}'
+            else:
+                cls.PORT = 8000
+
+            cls.conn = Connection(url)
             cls.conn.openTree('cmod', 1090909009)
 
     def setUp(self):
