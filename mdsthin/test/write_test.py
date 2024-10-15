@@ -221,17 +221,22 @@ class WriteTest(unittest.TestCase):
         self.assertEqual(self.conn.getObject('sig'), signal)
 
     def test_putmany(self):
-        raise unittest.SkipTest('Disabled until PutManyExecute is fixedin libMdsObjectsCppShr.so')
-        
-        pm = self.conn.putMany()
-        pm.append('num', '$', Int32(42))
-        pm.append('str', '$', String("Hello, World!"))
-        pm.append('sig', '`SerializeIn($)', Signal(1, 2, 3).serialize())
-        pm.execute()
+        if self.conn.getServerVersion() < (7, 145, 7):
+            raise unittest.SkipTest('Disabled for MDSplus < 7.145.7')
 
-        self.assertEqual(self.conn.get('num'), Int32(42))
-        self.assertEqual(self.conn.get('str'), String("Hello, World!"))
-        self.assertEqual(self.conn.getObject('nusigm'), Signal(1, 2, 3))
+        try:
+            pm = self.conn.putMany()
+            pm.append('num', '$', Int32(42))
+            pm.append('str', '$', String("Hello, World!"))
+            pm.append('sig', '`SerializeIn($)', Signal(1, 2, 3).serialize())
+            pm.execute()
+
+            self.assertEqual(self.conn.get('num'), Int32(42))
+            self.assertEqual(self.conn.get('str'), String("Hello, World!"))
+            self.assertEqual(self.conn.getObject('sig'), Signal(1, 2, 3))
+
+        except LibKEYNOTFOU:
+            raise unittest.SkipTest('Disabled when PutManyExecute is missing from libMdsObjectsCppShr')
 
     def test_permissions(self):
         import platform

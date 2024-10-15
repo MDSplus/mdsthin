@@ -550,6 +550,10 @@ class Connection:
         :rtype: :class:`PutMany`
         """
 
+        if self.getServerVersion() < (7, 145, 7):
+            import warnings
+            warnings.warn('putMany is likely broken in MDSplus < 7.145.7, use with caution')
+
         return PutMany(self)
 
     def openTree(self, tree: str, shot: int):
@@ -633,6 +637,14 @@ class Connection:
         if result is None:
             return ''
         return result.data()
+    
+    def getServerVersion(self):
+        import re
+
+        show_version = self.tcl('show version')
+        matches = re.search(r'MDSplus version: ([0-9]+)\.([0-9]+)\.([0-9]+)', show_version, re.MULTILINE)
+
+        return (int(matches[1]), int(matches[2]), int(matches[3]))
 
     def mdstcl(self):
         """
