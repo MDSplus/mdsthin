@@ -117,6 +117,7 @@ class Connection:
         self._ssh_paramiko_options = ssh_paramiko_options
         self._ssh_use_plink = ssh_use_plink
 
+        self._url = url
         self._host = url
 
         if '://' in self._host:

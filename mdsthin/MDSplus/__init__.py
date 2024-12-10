@@ -44,6 +44,12 @@ del Connection.tcl
 del Connection.tdic
 del Connection.mdstcl
 
+@property
+def hostspec(self):
+    return self._url
+
+Connection.hostspec = hostspec
+
 from ..descriptors import Descriptor as Data
 from ..descriptors import Descriptor as DescriptorNULL
 from ..descriptors import Descriptor as EmptyData
