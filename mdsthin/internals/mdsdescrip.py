@@ -25,8 +25,8 @@
 
 import ctypes
 
-from .dtypedef import *
-from .classdef import *
+from .classdef import class_t, class_to_string
+from .dtypedef import dtype_t, dtype_to_string
 
 ###
 ### mdsdsc_t

@@ -27,6 +27,7 @@ import numpy
 import unittest
 
 from ..descriptors import *
+from ..exceptions import TdiINVCLADTY
 
 class DescriptorsTest(unittest.TestCase):
 

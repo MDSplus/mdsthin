@@ -24,9 +24,10 @@
 #
 
 import ctypes
+
 import numpy
 
-from .dtypedef import *
+from .dtypedef import DTYPE_D, DTYPE_F, DTYPE_G, DTYPE_H
 
 ###
 ### VMS

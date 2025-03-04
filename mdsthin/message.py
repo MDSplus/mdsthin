@@ -25,7 +25,21 @@
 
 from __future__ import annotations
 
-from .descriptors import *
+import ctypes
+
+from .descriptors import Descriptor, DescriptorA, DescriptorS
+from .internals.dtypedef import (
+    DTYPE_D,
+    DTYPE_DC,
+    DTYPE_F,
+    DTYPE_FC,
+    DTYPE_FS,
+    DTYPE_FSC,
+    DTYPE_FT,
+    DTYPE_FTC,
+    DTYPE_MISSING,
+    dtype_t,
+)
 
 client_t = ctypes.c_int8
 
