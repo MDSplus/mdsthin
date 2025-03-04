@@ -208,12 +208,12 @@ class ConnectionTest(unittest.TestCase):
         self.assertEqual(gm.get('b'), 'Hello, World!')
         self.assertRaises(TreeNOT_OPEN, gm.get, 'c')
 
-    # def test_root_whoami(self):
+    def test_root_whoami(self):
 
-    #     root_conn = Connection(f'root@{self.SERVER}')
+        root_conn = Connection(f'root@{self.SERVER}')
 
-    #     whoami = root_conn.get('whoami()').data()
-    #     self.assertEqual(whoami, 'nobody', msg='Claiming to be root should map you to nobody.')
+        whoami = root_conn.get('whoami()').data()
+        self.assertEqual(whoami, 'nobody', msg='Claiming to be root should map you to nobody.')
 
     # We're a little limited in what we can test here
     def test_ssh_subprocess(self):
