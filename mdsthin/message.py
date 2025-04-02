@@ -99,8 +99,15 @@ class Message(MsgHdr):
     def unpack_data(self, buffer):
 
         if (self.client_type & COMPRESSED) > 0:
-            raise Exception('Compression is not implemented')
-        
+            import zlib
+
+            original_msglen = ctypes.c_uint32.from_buffer(buffer).value
+            original_buffer_size = original_msglen - ctypes.sizeof(Message) - ctypes.sizeof(ctypes.c_uint32)
+            compressed_buffer = buffer[ctypes.sizeof(ctypes.c_uint32) : ]
+            
+            buffer = zlib.decompress(compressed_buffer, bufsize=original_buffer_size)
+            self.msglen = original_msglen
+
         dtype_id = self.dtype_id
 
         # The data for deprecated dtypes gets converted automatically
