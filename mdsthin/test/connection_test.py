@@ -26,8 +26,12 @@
 import getpass
 import unittest
 
+import numpy
+
 from ..connection import *
+from ..descriptors import *
 from ..functions import *
+from ..exceptions import TreeNOT_OPEN
 
 class ConnectionTest(unittest.TestCase):
 
@@ -61,13 +65,13 @@ class ConnectionTest(unittest.TestCase):
     def test_tdi_types(self):
 
         tests = [
-            { 'type': Int32,   'exp': '42',        'value': 42, },
             { 'type': UInt8,   'exp': '42BU',      'value': 42, },
             { 'type': UInt16,  'exp': '42WU',      'value': 42, },
             { 'type': UInt32,  'exp': '42LU',      'value': 42, },
             { 'type': UInt64,  'exp': '42QU',      'value': 42, },
             { 'type': Int8,    'exp': '42B',       'value': 42, },
             { 'type': Int16,   'exp': '42W',       'value': 42, },
+            { 'type': Int32,   'exp': '42',        'value': 42, },
             { 'type': Int32,   'exp': '42L',       'value': 42, },
             { 'type': Int64,   'exp': '42Q',       'value': 42, },
             { 'type': Float32, 'exp': '3.14159',   'value': 3.14159, },
@@ -85,6 +89,8 @@ class ConnectionTest(unittest.TestCase):
             { 'type': Int16Array, 'exp': '[ [2W, 4W], [6W, 8W] ]', 'value': numpy.array([ [2, 4], [6, 8] ], dtype=numpy.int16) },
             { 'type': Int32Array, 'exp': '[ [2L, 4L], [6L, 8L] ]', 'value': numpy.array([ [2, 4], [6, 8] ], dtype=numpy.int32) },
             { 'type': Int64Array, 'exp': '[ [2Q, 4Q], [6Q, 8Q] ]', 'value': numpy.array([ [2, 4], [6, 8] ], dtype=numpy.int64) },
+
+            ## TODO: complete the tests with Float32Array, and Float64Array
         ]
 
         for info in tests:
@@ -110,6 +116,78 @@ class ConnectionTest(unittest.TestCase):
                     self.assertAlmostEqual(data.data(), info['value'], places=5)
                 else:
                     self.assertEqual(data, info['value'])
+
+    def test_numpy_numerical_types(self):
+        """Send a numerical numpy object to the MDSplus server and then retrieve.
+        For numpy numerical the received data should be **identical** the sent data.
+        This is perhaps more of an integration test as it serializes and deserializes the data.
+        """
+
+        tests_data = [
+            # Static data (testing DescriptorS)
+            {"input_data": numpy.uint8(42)},
+            {"input_data": numpy.uint16(42)},
+            {"input_data": numpy.uint32(42)},
+            {"input_data": numpy.uint64(42)},
+            {"input_data": numpy.int8(42)},
+            {"input_data": numpy.int16(42)},
+            {"input_data": numpy.int32(42)},
+            {"input_data": numpy.int64(42)},
+            {"input_data": numpy.float32(42)},
+            {"input_data": numpy.float64(42)},
+            # Array data (testing DescriptorA)
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.uint8)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.uint16)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.uint32)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.uint64)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.int8)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.int16)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.int32)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.int64)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.float32)},
+            {"input_data": numpy.array([[2, 4], [6, 8]], dtype=numpy.float64)},
+        ]
+
+        for test_data in tests_data:
+            data_retrieved = self.conn.get("_x=$1", test_data['input_data']).data()
+            numpy.testing.assert_array_equal(data_retrieved, test_data['input_data'])
+
+        # Extra test with a tdi numerical addition
+        for test_data in tests_data:
+            data_retrieved = self.conn.get("_x=$1+3", test_data['input_data']).data()
+            numpy.testing.assert_array_equal(data_retrieved, test_data['input_data'] + 3)
+
+    def test_numpy_string_types(self):
+        """Send a string numpy object to the MDSplus server and then retrieve.
+        This is perhaps more of an integration test as it serializes and deserializes the data.
+        """
+        tests_data = [
+            # Static data (testing DescriptorS)
+            # {"input_data": numpy.str("hello world")},  # numpy.str has been removed from numpy
+            # Array data (testing DescriptorA)
+            {"input_data": numpy.array(["hello", "world", "with jagged array..."]), "expected_data": numpy.array(["hello", "world", "with jagged array..."])},
+            # are there any more numpy string types supported by MDSplus?
+        ]
+
+        for test_data in tests_data:
+            data_retrieved = self.conn.get("_x=$1", test_data['input_data']).data()
+            numpy.testing.assert_array_equal(data_retrieved, test_data['expected_data'])
+
+    def test_python_native_types(self):
+        """Send Python native objects to the MDSplus server and then retrieve.
+        This is perhaps more of an integration test as it serializes and deserializes the data.
+        """
+        tests_data = [
+            # Static data (testing DescriptorS)
+            {"input_data": 42, "expected_data": numpy.int64(42)},
+            {"input_data": 42., "expected_data": numpy.float64(42)},
+            {"input_data": "hello world", "expected_data": "hello world"},
+            # Array data (testing DescriptorA)
+        ]
+
+        for test_data in tests_data:
+            data_retrieved = self.conn.get("_x=$1", test_data['input_data']).data()
+            numpy.testing.assert_array_equal(data_retrieved, test_data['input_data'])
 
     def test_getmany(self):
 

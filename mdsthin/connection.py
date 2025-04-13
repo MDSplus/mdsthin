@@ -23,17 +23,25 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os
-import sys
-import time
 import ctypes
-import socket
 import getpass
 import logging
+import os
+import socket
+import sys
+import time
 
-from .message import *
-from .exceptions import *
-from .functions import *
+from .descriptors import Descriptor, Dictionary, List, String
+from .exceptions import (
+    STATUS_NOT_OK,
+    MdsException,
+    MDSplusException,
+    getException,
+    getExceptionFromError,
+)
+from .functions import dMISSING
+from .internals.dtypedef import dtype_to_string
+from .message import Message
 
 INVALID_MESSAGE_ID = 0
 
@@ -453,7 +461,7 @@ class Connection:
 
         return msg, data
 
-    def get(self, expr, *args):
+    def get(self, expr: str, *args):
         """
         Evaluate an expression on the remote server and return the result. This works like
         `mdsvalue()` in our other APIs.
@@ -495,7 +503,7 @@ class Connection:
 
         return data
 
-    def getObject(self, expr, *args):
+    def getObject(self, expr: str, *args):
         """
         Evaluate a `get()` expression, but the expression will be wrapped in 'SerializeOut'
         and `deserialize()` will be called on the result. This allows you to retrieve data
@@ -513,7 +521,7 @@ class Connection:
         """
         return self.get(f'SerializeOut(`({expr};))', *args).deserialize(conn=self)
 
-    def put(self, path, expr, *args):
+    def put(self, path: str, expr: str, *args):
         """
         Put an evaluated expression into a node in the last opened MDSplus tree.
 
@@ -751,7 +759,7 @@ class GetMany:
         self._queries = List()
         self._result = None
 
-    def append(self, name, exp, *args):
+    def append(self, name: str, exp: str, *args):
         """
         Add a named expression to the list to be evaluated by `execute()`.
 
@@ -767,7 +775,7 @@ class GetMany:
             'args': list(args),
         }))
 
-    def remove(self, name):
+    def remove(self, name: str):
         """
         Remove a named expression from the list
 
@@ -801,7 +809,7 @@ class GetMany:
         self._result = result.deserialize()
         return self._result
 
-    def get(self, name):
+    def get(self, name: str):
         """
         Get the result of a named expression, or raise an error if the evaluation failed.
 

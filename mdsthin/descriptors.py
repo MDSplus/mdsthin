@@ -24,13 +24,65 @@
 #
 
 import ctypes
+
 import numpy
 
-from .exceptions import *
-from .internals.dtypedef import *
-from .internals.classdef import *
-from .internals.mdsdescrip import *
+from .exceptions import MdsException, getExceptionFromError
+from .internals.classdef import (
+    CLASS_A,
+    CLASS_APD,
+    CLASS_CA,
+    CLASS_MISSING,
+    CLASS_R,
+    CLASS_S,
+    class_to_string,
+)
 from .internals.CvtConvertFloat import convert_float, convert_float_array
+from .internals.dtypedef import (
+    DTYPE_ACTION,
+    DTYPE_B,
+    DTYPE_BU,
+    DTYPE_CALL,
+    DTYPE_CONDITION,
+    DTYPE_CONGLOM,
+    DTYPE_D,
+    DTYPE_DEPENDENCY,
+    DTYPE_DICTIONARY,
+    DTYPE_DIMENSION,
+    DTYPE_DISPATCH,
+    DTYPE_F,
+    DTYPE_FS,
+    DTYPE_FT,
+    DTYPE_FUNCTION,
+    DTYPE_G,
+    DTYPE_IDENT,
+    DTYPE_L,
+    DTYPE_LIST,
+    DTYPE_LU,
+    DTYPE_METHOD,
+    DTYPE_MISSING,
+    DTYPE_NID,
+    DTYPE_OPAQUE,
+    DTYPE_PATH,
+    DTYPE_PROCEDURE,
+    DTYPE_PROGRAM,
+    DTYPE_Q,
+    DTYPE_QU,
+    DTYPE_RANGE,
+    DTYPE_ROUTINE,
+    DTYPE_SIGNAL,
+    DTYPE_SLOPE,
+    DTYPE_T,
+    DTYPE_TUPLE,
+    DTYPE_W,
+    DTYPE_WINDOW,
+    DTYPE_WITH_ERROR,
+    DTYPE_WITH_UNITS,
+    DTYPE_WU,
+    dtype_to_string,
+    get_dtype_size,
+)
+from .internals.mdsdescrip import mdsdsc_a_t, mdsdsc_r_t, mdsdsc_s_t, mdsdsc_t
 
 ###
 ### Numeric
@@ -492,7 +544,7 @@ class Descriptor:
 
 class DescriptorS(Descriptor):
     """
-    A subclass of :class:`Descriptor` representing CLASS_S types.
+    A subclass of :class:`Descriptor` representing CLASS_S types (static data).
     """
 
     def __new__(cls, *args, **kwargs):
@@ -845,6 +897,8 @@ class Float64(DescriptorS, Numeric):
 ###
 
 class DescriptorA(Descriptor):
+    """A subclass of :class:`Descriptor` representing CLASS_A types (array data).
+    """
 
     def __new__(cls, *args, **kwargs):
         if cls is DescriptorA:
@@ -1227,6 +1281,7 @@ class Float64Array(DescriptorA, Numeric):
 ###
 
 class DescriptorAPD(Descriptor):
+    """A subclass of :class:`Descriptor` representing CLASS_A types (`A`rray of `P`ointers to `D`ata descriptor)"""
 
     def __new__(cls, *args, **kwargs):
         if cls is DescriptorAPD:
@@ -1499,6 +1554,7 @@ class Dictionary(DescriptorAPD):
 # TODO: data = Signal(); data2 = Signal(data)
 
 class DescriptorR(Descriptor):
+    """A subclass of :class:`Descriptor` representing CLASS_R types (record descriptor)."""
 
     def __new__(cls, *args, **kwargs):
         if cls is DescriptorR:
