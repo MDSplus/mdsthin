@@ -40,16 +40,6 @@ from ..functions import *
 
 # Compatability
 
-del Connection.tcl
-del Connection.tdic
-del Connection.mdstcl
-
-@property
-def hostspec(self):
-    return self._url
-
-Connection.hostspec = hostspec
-
 from ..descriptors import Descriptor as Data
 from ..descriptors import Descriptor as DescriptorNULL
 from ..descriptors import Descriptor as EmptyData
@@ -65,6 +55,25 @@ from ..descriptors import UInt32Array as Uint32Array
 from ..descriptors import UInt64Array as Uint64Array
 
 from .. import exceptions as mdsExceptions
+
+del Connection.tcl
+del Connection.tdic
+del Connection.mdstcl
+
+@property
+def Connection_hostspec(self):
+    return self._url
+
+Connection.hostspec = Connection_hostspec
+
+def Data_astype(self, numpy_dtype):
+    import numpy
+    value = self.data()
+    if type(value) is str:
+        value = numpy.str_(value)
+    return Data.from_data(value.astype(numpy_dtype))
+
+Data.astype = Data_astype
 
 mdsExceptions.statusToException = mdsExceptions.getException
 

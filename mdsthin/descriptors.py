@@ -1048,6 +1048,8 @@ class UInt8Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Byte_Unsigned([ ... ])'
         return f'Byte_Unsigned({repr(self._data.tolist())})'
 
     def deserialize(self, conn=None):
@@ -1069,6 +1071,8 @@ class UInt16Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Word_Unsigned([ ... ])'
         return f'Word_Unsigned({repr(self._data.tolist())})'
 
 class UInt32Array(DescriptorA, Numeric):
@@ -1087,6 +1091,8 @@ class UInt32Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Long_Unsigned([ ... ])'
         return f'Long_Unsigned({repr(self._data.tolist())})'
 
 class UInt64Array(DescriptorA, Numeric):
@@ -1105,6 +1111,8 @@ class UInt64Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Quadword_Unsigned([ ... ])'
         return f'Quadword_Unsigned({repr(self._data.tolist())})'
 
 class Int8Array(DescriptorA, Numeric):
@@ -1127,6 +1135,8 @@ class Int8Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Byte([ ... ])'
         return f'Byte({repr(self._data.tolist())})'
 
     def deserialize(self, conn=None):
@@ -1148,6 +1158,8 @@ class Int16Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Word([ ... ])'
         return f'Word({repr(self._data.tolist())})'
 
 class Int32Array(DescriptorA, Numeric):
@@ -1166,6 +1178,8 @@ class Int32Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Long([ ... ])'
         return f'Long({repr(self._data.tolist())})'
 
 class Int64Array(DescriptorA, Numeric):
@@ -1184,6 +1198,8 @@ class Int64Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'Quadword([ ... ])'
         return f'Quadword({repr(self._data.tolist())})'
 
 class Float32Array(DescriptorA, Numeric):
@@ -1202,6 +1218,8 @@ class Float32Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'FS_FLOAT([ ... ])'
         return f'FS_FLOAT({repr(self._data.tolist())})'
 
 class Float64Array(DescriptorA, Numeric):
@@ -1220,6 +1238,8 @@ class Float64Array(DescriptorA, Numeric):
         )
 
     def __repr__(self):
+        if self._data.size > 100:
+            return f'FT_FLOAT([ ... ])'
         return f'FT_FLOAT({repr(self._data.tolist())})'
     
 ###

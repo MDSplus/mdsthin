@@ -196,7 +196,7 @@ class Connection:
             address_list = socket.getaddrinfo(self._host, self._port, family=socket_family, type=socket_type)
             self._address = address_list[0][4]
 
-            self._logger.debug(f'Connecting to {self._address}:{self._port}')
+            self._logger.debug(f'Connecting to {self._address}')
             self._socket.connect(self._address)
 
         elif self._protocol in ['ssh', 'sshp']:
