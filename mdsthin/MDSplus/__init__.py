@@ -30,6 +30,7 @@
 #
 
 from ..connection import Connection, GetMany, PutMany
+from ..ext import Tree, TreeNode, setDefaultConnection, getDefaultConnection
 
 from ..descriptors import String, StringArray
 from ..descriptors import Int8, Int16, Int32, Int64, Int8Array, Int16Array, Int32Array, Int64Array
