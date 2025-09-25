@@ -574,7 +574,7 @@ class String(DescriptorS):
         return self._data
 
     def __repr__(self):
-        return f'"{self._data.replace('"', '\\"')}"'
+        return '"' + self._data.replace('"', '\\"') + '"'
 
     def pack_data(self):
         return bytearray(self._data.encode('ascii'))
