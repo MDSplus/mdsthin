@@ -699,22 +699,41 @@ class TreeNode(_NCI):
 
     def getNode(self, path):
         if not path.startswith('\\'):
-            path = self.fullpath + ':' + path # TODO: Replace : with ^?
+            path = self.fullpath + '~' + path # ~ means either . or :
         return TreeNode(path, self._tree)
     
-    # TODO: Implement TreeFindNodeWildRelative in TDI
-    # def getNodeWild(self, wildcard: str, *usage: str):
-    #     usage_mask = 0xFFFF
-    #     if len(usage) > 0:
-    #         try:
-    #             usage_mask = 0
-    #             for u in usage:
-    #                 usage_mask |= 1 << usage_lookup(u.upper())
-    #         except KeyError:
-    #             raise Exception(f'Unknown usage {u}')
+    def getNodeWild(self, wildcard: str, *usage: str):
+        usage_mask = 0xFFFF
+        if len(usage) > 0:
+            try:
+                usage_mask = 0
+                for u in usage:
+                    usage_mask |= 1 << usage_lookup(u.upper())
+            except KeyError:
+                raise Exception(f'Unknown usage {u}')
+            
+        # TODO: Implement TreeFindNodeWildRelative as a .fun
+        nids = self._conn.get(
+            'public fun TreeFindNodeWildRelative(in _path, in _startnid, optional _usagemask) {' +
+                '_ctx=0q;' +
+                '_nid=0;' +
+                '_nids=[];' +
+                'if (!present(_usagemask)) _usagemask = -1;' +
+                'while (TreeShr->TreeFindNodeWildRelative(_path, val(_startnid), ref(_nid), ref(_ctx), val(_usagemask)) & 1) {' +
+                    'if (size(_nids) > 0) {' +
+                        '_nids = [_nids, _nid];' +
+                    '} else {' +
+                        '_nids = [_nid];' +
+                    '}' +
+                '};' +
+                'TreeShr->TreeFindNodeEnd(_ctx);' +
+                'return(_nids);' +
+            '};' +
+            'TreeFindNodeWildRelative($, $, $)',
+            wildcard, self._nid, usage_mask
+        ).data()
 
-    #     nids = self._conn.get('TreeFindNodeWild($,$)', wildcard, usage_mask).data()
-    #     return TreeNodeArray(nids, self._tree)
+        return TreeNodeArray(nids, self._tree)
 
     def __dir__(self):
 
@@ -766,9 +785,33 @@ class TreeNode(_NCI):
         except TreeNNF:
             pass
 
+    def decompile(self):
+        # TODO: Implement TreeDecompileRecord as a .fun
+        return self._conn.get(
+            'public fun TreeDecompileRecord(in _nid) {' +
+                '_out=1;' +
+                '_status=TreeShr->TreeGetRecord(val(_nid), xd(_out));' +
+                'return(execute("decompile(`_out)"));' +
+            '};' +
+            'TreeDecompileRecord($)',
+            self._nid
+        ).data()
+    
     @property
     def record(self):
-        return self._conn.getObject(self.fullpath)
+        # TODO: Implement TreeGetRecordSerialized as a .fun
+        return self._conn.get(
+            'public fun TreeGetRecordSerialized(in _nid) {' +
+                '_out=1;' +
+                '_status=TreeShr->TreeGetRecord(val(_nid), xd(_out));' +
+                'return(execute("SerializeOut(`_out)"));' +
+            '};' +
+            'TreeGetRecordSerialized($)',
+            self._nid
+        ).deserialize(conn=self._conn)
+    
+    def getRecord(self):
+        return self.record
 
     def data(self):
         return self._conn.get(self.fullpath).data()
@@ -1002,6 +1045,19 @@ class Tree(TreeNode):
             if self._path is not None:
                 self._conn.get(f'setenv("{env_name}={old_path}")')
 
+    def getNodeWild(self, wildcard: str, *usage: str):
+        usage_mask = 0xFFFF
+        if len(usage) > 0:
+            try:
+                usage_mask = 0
+                for u in usage:
+                    usage_mask |= 1 << usage_lookup(u.upper())
+            except KeyError:
+                raise Exception(f'Unknown usage {u}')
+
+        nids = self._conn.get('TreeFindNodeWild($,$)', wildcard, usage_mask).data()
+        return TreeNodeArray(nids, self._tree)
+    
     @classmethodX
     def setCurrent(self, tree: str = None, shot: int = None, conn: Connection = None):
         # TODO: Investigate

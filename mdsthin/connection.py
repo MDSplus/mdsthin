@@ -107,7 +107,7 @@ class Connection:
         self._socket = None
         self._timeout = timeout
         self._message_id = INVALID_MESSAGE_ID
-        self._server_version = None
+        self._server_api_version = None
         self._compression_level = None
 
         self._ssh_backend = ssh_backend
@@ -396,13 +396,14 @@ class Connection:
         if STATUS_NOT_OK(msg_login.status):
             raise MdsException('Failed to login')
 
+        self._server_version = None
         self._compression_level = (msg_login.status & 0x1E) >> 1
         self._client_type = msg_login.client_type
 
         if msg_login.ndims > 0:
-            self._server_version = msg_login.dims[0]
+            self._server_api_version = msg_login.dims[0]
 
-        self._logger.debug(f'Received login response with version={self._server_version} client_type={self._client_type} compression_level={self._compression_level}')
+        self._logger.debug(f'Received login response with version={self._server_api_version} client_type={self._client_type} compression_level={self._compression_level}')
 
     def disconnect(self):
         """Close the socket."""
@@ -640,12 +641,15 @@ class Connection:
         return result.data()
     
     def getServerVersion(self):
-        import re
+        if self._server_version is None:
+            import re
 
-        show_version = self.tcl('show version')
-        matches = re.search(r'MDSplus version: ([0-9]+)\.([0-9]+)\.([0-9]+)', show_version, re.MULTILINE)
+            show_version = self.tcl('show version')
+            matches = re.search(r'MDSplus version: ([0-9]+)\.([0-9]+)\.([0-9]+)', show_version, re.MULTILINE)
 
-        return (int(matches[1]), int(matches[2]), int(matches[3]))
+            self._server_version = (int(matches[1]), int(matches[2]), int(matches[3]))
+        
+        return self._server_version
 
     def mdstcl(self):
         """

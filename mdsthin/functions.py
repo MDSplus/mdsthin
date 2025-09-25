@@ -25,1386 +25,1386 @@
 
 from .descriptors import Function
 
-def d():
-    return Function(0)
+def d(conn=None):
+    return Function(0, conn=conn)
 
-def dA0():
-    return Function(1)
+def dA0(conn=None):
+    return Function(1, conn=conn)
 
-def dALPHA():
-    return Function(2)
+def dALPHA(conn=None):
+    return Function(2, conn=conn)
 
-def dAMU():
-    return Function(3)
+def dAMU(conn=None):
+    return Function(3, conn=conn)
 
-def dC():
-    return Function(4)
+def dC(conn=None):
+    return Function(4, conn=conn)
 
-def dCAL():
-    return Function(5)
+def dCAL(conn=None):
+    return Function(5, conn=conn)
 
-def dDEGREE():
-    return Function(6)
+def dDEGREE(conn=None):
+    return Function(6, conn=conn)
 
-def dEV():
-    return Function(7)
+def dEV(conn=None):
+    return Function(7, conn=conn)
 
-def dFALSE():
-    return Function(8)
+def dFALSE(conn=None):
+    return Function(8, conn=conn)
 
-def dFARADAY():
-    return Function(9)
+def dFARADAY(conn=None):
+    return Function(9, conn=conn)
 
-def dG():
-    return Function(10)
+def dG(conn=None):
+    return Function(10, conn=conn)
 
-def dGAS():
-    return Function(11)
+def dGAS(conn=None):
+    return Function(11, conn=conn)
 
-def dH():
-    return Function(12)
+def dH(conn=None):
+    return Function(12, conn=conn)
 
-def dHBAR():
-    return Function(13)
+def dHBAR(conn=None):
+    return Function(13, conn=conn)
 
-def dI():
-    return Function(14)
+def dI(conn=None):
+    return Function(14, conn=conn)
 
-def dK():
-    return Function(15)
+def dK(conn=None):
+    return Function(15, conn=conn)
 
-def dME():
-    return Function(16)
+def dME(conn=None):
+    return Function(16, conn=conn)
 
-def dMISSING():
-    return Function(17)
+def dMISSING(conn=None):
+    return Function(17, conn=conn)
 
-def dMP():
-    return Function(18)
+def dMP(conn=None):
+    return Function(18, conn=conn)
 
-def dN0():
-    return Function(19)
+def dN0(conn=None):
+    return Function(19, conn=conn)
 
-def dNA():
-    return Function(20)
+def dNA(conn=None):
+    return Function(20, conn=conn)
 
-def dP0():
-    return Function(21)
+def dP0(conn=None):
+    return Function(21, conn=conn)
 
-def dPI():
-    return Function(22)
+def dPI(conn=None):
+    return Function(22, conn=conn)
 
-def dQE():
-    return Function(23)
+def dQE(conn=None):
+    return Function(23, conn=conn)
 
-def dRE():
-    return Function(24)
+def dRE(conn=None):
+    return Function(24, conn=conn)
 
-def dROPRAND():
-    return Function(25)
+def dROPRAND(conn=None):
+    return Function(25, conn=conn)
 
-def dRYDBERG():
-    return Function(26)
+def dRYDBERG(conn=None):
+    return Function(26, conn=conn)
 
-def dT0():
-    return Function(27)
+def dT0(conn=None):
+    return Function(27, conn=conn)
 
-def dTORR():
-    return Function(28)
+def dTORR(conn=None):
+    return Function(28, conn=conn)
 
-def dTRUE():
-    return Function(29)
+def dTRUE(conn=None):
+    return Function(29, conn=conn)
 
-def dVALUE():
-    return Function(30)
+def dVALUE(conn=None):
+    return Function(30, conn=conn)
 
-def ABORT(*args):
-    return Function(31, *args)
+def ABORT(*args, conn=None):
+    return Function(31, *args, conn=conn)
 
-def ABS(*args):
-    return Function(32, *args)
+def ABS(*args, conn=None):
+    return Function(32, *args, conn=conn)
 
-def ABS1(*args):
-    return Function(33, *args)
+def ABS1(*args, conn=None):
+    return Function(33, *args, conn=conn)
 
-def ABSSQ(*args):
-    return Function(34, *args)
+def ABSSQ(*args, conn=None):
+    return Function(34, *args, conn=conn)
 
-def ACHAR(*args):
-    return Function(35, *args)
+def ACHAR(*args, conn=None):
+    return Function(35, *args, conn=conn)
 
-def ACOS(*args):
-    return Function(36, *args)
+def ACOS(*args, conn=None):
+    return Function(36, *args, conn=conn)
 
-def ACOSD(*args):
-    return Function(37, *args)
+def ACOSD(*args, conn=None):
+    return Function(37, *args, conn=conn)
 
-def ADD(*args):
-    return Function(38, *args)
+def ADD(*args, conn=None):
+    return Function(38, *args, conn=conn)
 
-def ADJUSTL(*args):
-    return Function(39, *args)
+def ADJUSTL(*args, conn=None):
+    return Function(39, *args, conn=conn)
 
-def ADJUSTR(*args):
-    return Function(40, *args)
+def ADJUSTR(*args, conn=None):
+    return Function(40, *args, conn=conn)
 
-def AIMAG(*args):
-    return Function(41, *args)
+def AIMAG(*args, conn=None):
+    return Function(41, *args, conn=conn)
 
-def AINT(*args):
-    return Function(42, *args)
+def AINT(*args, conn=None):
+    return Function(42, *args, conn=conn)
 
-def ALL(*args):
-    return Function(43, *args)
+def ALL(*args, conn=None):
+    return Function(43, *args, conn=conn)
 
-def ALLOCATED(*args):
-    return Function(44, *args)
+def ALLOCATED(*args, conn=None):
+    return Function(44, *args, conn=conn)
 
-def AND(*args):
-    return Function(45, *args)
+def AND(*args, conn=None):
+    return Function(45, *args, conn=conn)
 
-def AND_NOT(*args):
-    return Function(46, *args)
+def AND_NOT(*args, conn=None):
+    return Function(46, *args, conn=conn)
 
-def ANINT(*args):
-    return Function(47, *args)
+def ANINT(*args, conn=None):
+    return Function(47, *args, conn=conn)
 
-def ANY(*args):
-    return Function(48, *args)
+def ANY(*args, conn=None):
+    return Function(48, *args, conn=conn)
 
-def ARG(*args):
-    return Function(49, *args)
+def ARG(*args, conn=None):
+    return Function(49, *args, conn=conn)
 
-def ARGD(*args):
-    return Function(50, *args)
+def ARGD(*args, conn=None):
+    return Function(50, *args, conn=conn)
 
-def ARG_OF(*args):
-    return Function(51, *args)
+def ARG_OF(*args, conn=None):
+    return Function(51, *args, conn=conn)
 
-def ARRAY(*args):
-    return Function(52, *args)
+def ARRAY(*args, conn=None):
+    return Function(52, *args, conn=conn)
 
-def ASIN(*args):
-    return Function(53, *args)
+def ASIN(*args, conn=None):
+    return Function(53, *args, conn=conn)
 
-def ASIND(*args):
-    return Function(54, *args)
+def ASIND(*args, conn=None):
+    return Function(54, *args, conn=conn)
 
-def AS_IS(*args):
-    return Function(55, *args)
+def AS_IS(*args, conn=None):
+    return Function(55, *args, conn=conn)
 
-def ATAN(*args):
-    return Function(56, *args)
+def ATAN(*args, conn=None):
+    return Function(56, *args, conn=conn)
 
-def ATAN2(*args):
-    return Function(57, *args)
+def ATAN2(*args, conn=None):
+    return Function(57, *args, conn=conn)
 
-def ATAN2D(*args):
-    return Function(58, *args)
+def ATAN2D(*args, conn=None):
+    return Function(58, *args, conn=conn)
 
-def ATAND(*args):
-    return Function(59, *args)
+def ATAND(*args, conn=None):
+    return Function(59, *args, conn=conn)
 
-def ATANH(*args):
-    return Function(60, *args)
+def ATANH(*args, conn=None):
+    return Function(60, *args, conn=conn)
 
-def AXIS_OF(*args):
-    return Function(61, *args)
+def AXIS_OF(*args, conn=None):
+    return Function(61, *args, conn=conn)
 
-def BACKSPACE(*args):
-    return Function(62, *args)
+def BACKSPACE(*args, conn=None):
+    return Function(62, *args, conn=conn)
 
-def IBCLR(*args):
-    return Function(63, *args)
+def IBCLR(*args, conn=None):
+    return Function(63, *args, conn=conn)
 
-def BEGIN_OF(*args):
-    return Function(64, *args)
+def BEGIN_OF(*args, conn=None):
+    return Function(64, *args, conn=conn)
 
-def IBITS(*args):
-    return Function(65, *args)
+def IBITS(*args, conn=None):
+    return Function(65, *args, conn=conn)
 
-def BREAK():
-    return Function(66)
+def BREAK(conn=None):
+    return Function(66, conn=conn)
 
-def BSEARCH(*args):
-    return Function(67, *args)
+def BSEARCH(*args, conn=None):
+    return Function(67, *args, conn=conn)
 
-def IBSET(*args):
-    return Function(68, *args)
+def IBSET(*args, conn=None):
+    return Function(68, *args, conn=conn)
 
-def BTEST(*args):
-    return Function(69, *args)
+def BTEST(*args, conn=None):
+    return Function(69, *args, conn=conn)
 
-def BUILD_ACTION(*args):
-    return Function(70, *args)
+def BUILD_ACTION(*args, conn=None):
+    return Function(70, *args, conn=conn)
 
-def BUILD_CONDITION(*args):
-    return Function(71, *args)
+def BUILD_CONDITION(*args, conn=None):
+    return Function(71, *args, conn=conn)
 
-def BUILD_CONGLOM(*args):
-    return Function(72, *args)
+def BUILD_CONGLOM(*args, conn=None):
+    return Function(72, *args, conn=conn)
 
-def BUILD_DEPENDENCY(*args):
-    return Function(73, *args)
+def BUILD_DEPENDENCY(*args, conn=None):
+    return Function(73, *args, conn=conn)
 
-def BUILD_DIM(*args):
-    return Function(74, *args)
+def BUILD_DIM(*args, conn=None):
+    return Function(74, *args, conn=conn)
 
-def BUILD_DISPATCH(*args):
-    return Function(75, *args)
+def BUILD_DISPATCH(*args, conn=None):
+    return Function(75, *args, conn=conn)
 
-def BUILD_EVENT(*args):
-    return Function(76, *args)
+def BUILD_EVENT(*args, conn=None):
+    return Function(76, *args, conn=conn)
 
-def BUILD_FUNCTION(*args):
-    return Function(77, *args)
+def BUILD_FUNCTION(*args, conn=None):
+    return Function(77, *args, conn=conn)
 
-def BUILD_METHOD(*args):
-    return Function(78, *args)
+def BUILD_METHOD(*args, conn=None):
+    return Function(78, *args, conn=conn)
 
-def BUILD_PARAM(*args):
-    return Function(79, *args)
+def BUILD_PARAM(*args, conn=None):
+    return Function(79, *args, conn=conn)
 
-def BUILD_PATH(*args):
-    return Function(80, *args)
+def BUILD_PATH(*args, conn=None):
+    return Function(80, *args, conn=conn)
 
-def BUILD_PROCEDURE(*args):
-    return Function(81, *args)
+def BUILD_PROCEDURE(*args, conn=None):
+    return Function(81, *args, conn=conn)
 
-def BUILD_PROGRAM(*args):
-    return Function(82, *args)
+def BUILD_PROGRAM(*args, conn=None):
+    return Function(82, *args, conn=conn)
 
-def BUILD_RANGE(*args):
-    return Function(83, *args)
+def BUILD_RANGE(*args, conn=None):
+    return Function(83, *args, conn=conn)
 
-def BUILD_ROUTINE(*args):
-    return Function(84, *args)
+def BUILD_ROUTINE(*args, conn=None):
+    return Function(84, *args, conn=conn)
 
-def BUILD_SIGNAL(*args):
-    return Function(85, *args)
+def BUILD_SIGNAL(*args, conn=None):
+    return Function(85, *args, conn=conn)
 
-def BUILD_SLOPE(*args):
-    return Function(86, *args)
+def BUILD_SLOPE(*args, conn=None):
+    return Function(86, *args, conn=conn)
 
-def BUILD_WINDOW(*args):
-    return Function(87, *args)
+def BUILD_WINDOW(*args, conn=None):
+    return Function(87, *args, conn=conn)
 
-def BUILD_WITH_UNITS(*args):
-    return Function(88, *args)
+def BUILD_WITH_UNITS(*args, conn=None):
+    return Function(88, *args, conn=conn)
 
-def BUILTIN_OPCODE(*args):
-    return Function(89, *args)
+def BUILTIN_OPCODE(*args, conn=None):
+    return Function(89, *args, conn=conn)
 
-def BYTE(*args):
-    return Function(90, *args)
+def BYTE(*args, conn=None):
+    return Function(90, *args, conn=conn)
 
-def BYTE_UNSIGNED(*args):
-    return Function(91, *args)
+def BYTE_UNSIGNED(*args, conn=None):
+    return Function(91, *args, conn=conn)
 
-def CASE(*args):
-    return Function(92, *args)
+def CASE(*args, conn=None):
+    return Function(92, *args, conn=conn)
 
-def CEILING(*args):
-    return Function(93, *args)
+def CEILING(*args, conn=None):
+    return Function(93, *args, conn=conn)
 
-def CHAR(*args):
-    return Function(94, *args)
+def CHAR(*args, conn=None):
+    return Function(94, *args, conn=conn)
 
-def CLASS(*args):
-    return Function(95, *args)
+def CLASS(*args, conn=None):
+    return Function(95, *args, conn=conn)
 
-def FCLOSE(*args):
-    return Function(96, *args)
+def FCLOSE(*args, conn=None):
+    return Function(96, *args, conn=conn)
 
-def CMPLX(*args):
-    return Function(97, *args)
+def CMPLX(*args, conn=None):
+    return Function(97, *args, conn=conn)
 
-def COMMA(*args):
-    return Function(98, *args)
+def COMMA(*args, conn=None):
+    return Function(98, *args, conn=conn)
 
-def COMPILE(*args):
-    return Function(99, *args)
+def COMPILE(*args, conn=None):
+    return Function(99, *args, conn=conn)
 
-def COMPLETION_OF(*args):
-    return Function(100, *args)
+def COMPLETION_OF(*args, conn=None):
+    return Function(100, *args, conn=conn)
 
-def CONCAT(*args):
-    return Function(101, *args)
+def CONCAT(*args, conn=None):
+    return Function(101, *args, conn=conn)
 
-def CONDITIONAL(*args):
-    return Function(102, *args)
+def CONDITIONAL(*args, conn=None):
+    return Function(102, *args, conn=conn)
 
-def CONJG(*args):
-    return Function(103, *args)
+def CONJG(*args, conn=None):
+    return Function(103, *args, conn=conn)
 
-def CONTINUE():
-    return Function(104)
+def CONTINUE(conn=None):
+    return Function(104, conn=conn)
 
-def CONVOLVE(*args):
-    return Function(105, *args)
+def CONVOLVE(*args, conn=None):
+    return Function(105, *args, conn=conn)
 
-def COS(*args):
-    return Function(106, *args)
+def COS(*args, conn=None):
+    return Function(106, *args, conn=conn)
 
-def COSD(*args):
-    return Function(107, *args)
+def COSD(*args, conn=None):
+    return Function(107, *args, conn=conn)
 
-def COSH(*args):
-    return Function(108, *args)
+def COSH(*args, conn=None):
+    return Function(108, *args, conn=conn)
 
-def COUNT(*args):
-    return Function(109, *args)
+def COUNT(*args, conn=None):
+    return Function(109, *args, conn=conn)
 
-def CSHIFT(*args):
-    return Function(110, *args)
+def CSHIFT(*args, conn=None):
+    return Function(110, *args, conn=conn)
 
-def CVT(*args):
-    return Function(111, *args)
+def CVT(*args, conn=None):
+    return Function(111, *args, conn=conn)
 
-def DATA(*args):
-    return Function(112, *args)
+def DATA(*args, conn=None):
+    return Function(112, *args, conn=conn)
 
-def DATE_AND_TIME(*args):
-    return Function(113, *args)
+def DATE_AND_TIME(*args, conn=None):
+    return Function(113, *args, conn=conn)
 
-def DATE_TIME(*args):
-    return Function(114, *args)
+def DATE_TIME(*args, conn=None):
+    return Function(114, *args, conn=conn)
 
-def DBLE(*args):
-    return Function(115, *args)
+def DBLE(*args, conn=None):
+    return Function(115, *args, conn=conn)
 
-def DEALLOCATE(*args):
-    return Function(116, *args)
+def DEALLOCATE(*args, conn=None):
+    return Function(116, *args, conn=conn)
 
-def DEBUG(*args):
-    return Function(117, *args)
+def DEBUG(*args, conn=None):
+    return Function(117, *args, conn=conn)
 
-def DECODE(*args):
-    return Function(118, *args)
+def DECODE(*args, conn=None):
+    return Function(118, *args, conn=conn)
 
-def DECOMPILE(*args):
-    return Function(119, *args)
+def DECOMPILE(*args, conn=None):
+    return Function(119, *args, conn=conn)
 
-def DECOMPRESS(*args):
-    return Function(120, *args)
+def DECOMPRESS(*args, conn=None):
+    return Function(120, *args, conn=conn)
 
-def DEFAULT(*args):
-    return Function(121, *args)
+def DEFAULT(*args, conn=None):
+    return Function(121, *args, conn=conn)
 
-def DERIVATIVE(*args):
-    return Function(122, *args)
+def DERIVATIVE(*args, conn=None):
+    return Function(122, *args, conn=conn)
 
-def DESCR(*args):
-    return Function(123, *args)
+def DESCR(*args, conn=None):
+    return Function(123, *args, conn=conn)
 
-def DIAGONAL(*args):
-    return Function(124, *args)
+def DIAGONAL(*args, conn=None):
+    return Function(124, *args, conn=conn)
 
-def DIGITS(*args):
-    return Function(125, *args)
+def DIGITS(*args, conn=None):
+    return Function(125, *args, conn=conn)
 
-def DIM(*args):
-    return Function(126, *args)
+def DIM(*args, conn=None):
+    return Function(126, *args, conn=conn)
 
-def DIM_OF(*args):
-    return Function(127, *args)
+def DIM_OF(*args, conn=None):
+    return Function(127, *args, conn=conn)
 
-def DISPATCH_OF(*args):
-    return Function(128, *args)
+def DISPATCH_OF(*args, conn=None):
+    return Function(128, *args, conn=conn)
 
-def DIVIDE(*args):
-    return Function(129, *args)
+def DIVIDE(*args, conn=None):
+    return Function(129, *args, conn=conn)
 
-def LBOUND(*args):
-    return Function(130, *args)
+def LBOUND(*args, conn=None):
+    return Function(130, *args, conn=conn)
 
-def DO(*args):
-    return Function(131, *args)
+def DO(*args, conn=None):
+    return Function(131, *args, conn=conn)
 
-def DOT_PRODUCT(*args):
-    return Function(132, *args)
+def DOT_PRODUCT(*args, conn=None):
+    return Function(132, *args, conn=conn)
 
-def DPROD(*args):
-    return Function(133, *args)
+def DPROD(*args, conn=None):
+    return Function(133, *args, conn=conn)
 
-def DSCPTR(*args):
-    return Function(134, *args)
+def DSCPTR(*args, conn=None):
+    return Function(134, *args, conn=conn)
 
-def SHAPE(*args):
-    return Function(135, *args)
+def SHAPE(*args, conn=None):
+    return Function(135, *args, conn=conn)
 
-def SIZE(*args):
-    return Function(136, *args)
+def SIZE(*args, conn=None):
+    return Function(136, *args, conn=conn)
 
-def KIND(*args):
-    return Function(137, *args)
+def KIND(*args, conn=None):
+    return Function(137, *args, conn=conn)
 
-def UBOUND(*args):
-    return Function(138, *args)
+def UBOUND(*args, conn=None):
+    return Function(138, *args, conn=conn)
 
-def D_COMPLEX(*args):
-    return Function(139, *args)
+def D_COMPLEX(*args, conn=None):
+    return Function(139, *args, conn=conn)
 
-def D_FLOAT(*args):
-    return Function(140, *args)
+def D_FLOAT(*args, conn=None):
+    return Function(140, *args, conn=conn)
 
-def RANGE(*args):
-    return Function(141, *args)
+def RANGE(*args, conn=None):
+    return Function(141, *args, conn=conn)
 
-def PRECISION(*args):
-    return Function(142, *args)
+def PRECISION(*args, conn=None):
+    return Function(142, *args, conn=conn)
 
-def ELBOUND(*args):
-    return Function(143, *args)
+def ELBOUND(*args, conn=None):
+    return Function(143, *args, conn=conn)
 
-def ELSE():
-    return Function(144)
+def ELSE(conn=None):
+    return Function(144, conn=conn)
 
-def ELSEWHERE():
-    return Function(145)
+def ELSEWHERE(conn=None):
+    return Function(145, conn=conn)
 
-def ENCODE(*args):
-    return Function(146, *args)
+def ENCODE(*args, conn=None):
+    return Function(146, *args, conn=conn)
 
-def ENDFILE(*args):
-    return Function(147, *args)
+def ENDFILE(*args, conn=None):
+    return Function(147, *args, conn=conn)
 
-def END_OF(*args):
-    return Function(148, *args)
+def END_OF(*args, conn=None):
+    return Function(148, *args, conn=conn)
 
-def EOSHIFT(*args):
-    return Function(149, *args)
+def EOSHIFT(*args, conn=None):
+    return Function(149, *args, conn=conn)
 
-def EPSILON(*args):
-    return Function(150, *args)
+def EPSILON(*args, conn=None):
+    return Function(150, *args, conn=conn)
 
-def EQ(*args):
-    return Function(151, *args)
+def EQ(*args, conn=None):
+    return Function(151, *args, conn=conn)
 
-def EQUALS(*args):
-    return Function(152, *args)
+def EQUALS(*args, conn=None):
+    return Function(152, *args, conn=conn)
 
-def EQUALS_FIRST(*args):
-    return Function(153, *args)
+def EQUALS_FIRST(*args, conn=None):
+    return Function(153, *args, conn=conn)
 
-def EQV(*args):
-    return Function(154, *args)
+def EQV(*args, conn=None):
+    return Function(154, *args, conn=conn)
 
-def ESHAPE(*args):
-    return Function(155, *args)
+def ESHAPE(*args, conn=None):
+    return Function(155, *args, conn=conn)
 
-def ESIZE(*args):
-    return Function(156, *args)
+def ESIZE(*args, conn=None):
+    return Function(156, *args, conn=conn)
 
-def EUBOUND(*args):
-    return Function(157, *args)
+def EUBOUND(*args, conn=None):
+    return Function(157, *args, conn=conn)
 
-def EVALUATE(*args):
-    return Function(158, *args)
+def EVALUATE(*args, conn=None):
+    return Function(158, *args, conn=conn)
 
-def EXECUTE(*args):
-    return Function(159, *args)
+def EXECUTE(*args, conn=None):
+    return Function(159, *args, conn=conn)
 
-def EXP(*args):
-    return Function(160, *args)
+def EXP(*args, conn=None):
+    return Function(160, *args, conn=conn)
 
-def EXPONENT(*args):
-    return Function(161, *args)
+def EXPONENT(*args, conn=None):
+    return Function(161, *args, conn=conn)
 
-def EXT_FUNCTION(*args):
-    return Function(162, *args)
+def EXT_FUNCTION(*args, conn=None):
+    return Function(162, *args, conn=conn)
 
-def FFT(*args):
-    return Function(163, *args)
+def FFT(*args, conn=None):
+    return Function(163, *args, conn=conn)
 
-def FIRSTLOC(*args):
-    return Function(164, *args)
+def FIRSTLOC(*args, conn=None):
+    return Function(164, *args, conn=conn)
 
-def FIT(*args):
-    return Function(165, *args)
+def FIT(*args, conn=None):
+    return Function(165, *args, conn=conn)
 
-def FIX_ROPRAND(*args):
-    return Function(166, *args)
+def FIX_ROPRAND(*args, conn=None):
+    return Function(166, *args, conn=conn)
 
-def FLOAT(*args):
-    return Function(167, *args)
+def FLOAT(*args, conn=None):
+    return Function(167, *args, conn=conn)
 
-def FLOOR(*args):
-    return Function(168, *args)
+def FLOOR(*args, conn=None):
+    return Function(168, *args, conn=conn)
 
-def FOR(*args):
-    return Function(169, *args)
+def FOR(*args, conn=None):
+    return Function(169, *args, conn=conn)
 
-def FRACTION(*args):
-    return Function(170, *args)
+def FRACTION(*args, conn=None):
+    return Function(170, *args, conn=conn)
 
-def FUN(*args):
-    return Function(171, *args)
+def FUN(*args, conn=None):
+    return Function(171, *args, conn=conn)
 
-def F_COMPLEX(*args):
-    return Function(172, *args)
+def F_COMPLEX(*args, conn=None):
+    return Function(172, *args, conn=conn)
 
-def F_FLOAT(*args):
-    return Function(173, *args)
+def F_FLOAT(*args, conn=None):
+    return Function(173, *args, conn=conn)
 
-def GE(*args):
-    return Function(174, *args)
+def GE(*args, conn=None):
+    return Function(174, *args, conn=conn)
 
-def GETNCI(*args):
-    return Function(175, *args)
+def GETNCI(*args, conn=None):
+    return Function(175, *args, conn=conn)
 
-def GOTO(*args):
-    return Function(176, *args)
+def GOTO(*args, conn=None):
+    return Function(176, *args, conn=conn)
 
-def GT(*args):
-    return Function(177, *args)
+def GT(*args, conn=None):
+    return Function(177, *args, conn=conn)
 
-def G_COMPLEX(*args):
-    return Function(178, *args)
+def G_COMPLEX(*args, conn=None):
+    return Function(178, *args, conn=conn)
 
-def G_FLOAT(*args):
-    return Function(179, *args)
+def G_FLOAT(*args, conn=None):
+    return Function(179, *args, conn=conn)
 
-def HELP_OF(*args):
-    return Function(180, *args)
+def HELP_OF(*args, conn=None):
+    return Function(180, *args, conn=conn)
 
-def HUGE(*args):
-    return Function(181, *args)
+def HUGE(*args, conn=None):
+    return Function(181, *args, conn=conn)
 
-def H_COMPLEX(*args):
-    return Function(182, *args)
+def H_COMPLEX(*args, conn=None):
+    return Function(182, *args, conn=conn)
 
-def H_FLOAT(*args):
-    return Function(183, *args)
+def H_FLOAT(*args, conn=None):
+    return Function(183, *args, conn=conn)
 
-def IACHAR(*args):
-    return Function(184, *args)
+def IACHAR(*args, conn=None):
+    return Function(184, *args, conn=conn)
 
-def IAND(*args):
-    return Function(185, *args)
+def IAND(*args, conn=None):
+    return Function(185, *args, conn=conn)
 
-def IAND_NOT(*args):
-    return Function(186, *args)
+def IAND_NOT(*args, conn=None):
+    return Function(186, *args, conn=conn)
 
-def ICHAR(*args):
-    return Function(187, *args)
+def ICHAR(*args, conn=None):
+    return Function(187, *args, conn=conn)
 
-def IDENT_OF(*args):
-    return Function(188, *args)
+def IDENT_OF(*args, conn=None):
+    return Function(188, *args, conn=conn)
 
-def IF(*args):
-    return Function(189, *args)
+def IF(*args, conn=None):
+    return Function(189, *args, conn=conn)
 
-def IF_ERROR(*args):
-    return Function(190, *args)
+def IF_ERROR(*args, conn=None):
+    return Function(190, *args, conn=conn)
 
-def IMAGE_OF(*args):
-    return Function(191, *args)
+def IMAGE_OF(*args, conn=None):
+    return Function(191, *args, conn=conn)
 
-def IN(*args):
-    return Function(192, *args)
+def IN(*args, conn=None):
+    return Function(192, *args, conn=conn)
 
-def INAND(*args):
-    return Function(193, *args)
+def INAND(*args, conn=None):
+    return Function(193, *args, conn=conn)
 
-def INAND_NOT(*args):
-    return Function(194, *args)
+def INAND_NOT(*args, conn=None):
+    return Function(194, *args, conn=conn)
 
-def INDEX(*args):
-    return Function(195, *args)
+def INDEX(*args, conn=None):
+    return Function(195, *args, conn=conn)
 
-def INOR(*args):
-    return Function(196, *args)
+def INOR(*args, conn=None):
+    return Function(196, *args, conn=conn)
 
-def INOR_NOT(*args):
-    return Function(197, *args)
+def INOR_NOT(*args, conn=None):
+    return Function(197, *args, conn=conn)
 
-def INOT(*args):
-    return Function(198, *args)
+def INOT(*args, conn=None):
+    return Function(198, *args, conn=conn)
 
-def INOUT(*args):
-    return Function(199, *args)
+def INOUT(*args, conn=None):
+    return Function(199, *args, conn=conn)
 
-def INQUIRE(*args):
-    return Function(200, *args)
+def INQUIRE(*args, conn=None):
+    return Function(200, *args, conn=conn)
 
-def INT(*args):
-    return Function(201, *args)
+def INT(*args, conn=None):
+    return Function(201, *args, conn=conn)
 
-def INTEGRAL(*args):
-    return Function(202, *args)
+def INTEGRAL(*args, conn=None):
+    return Function(202, *args, conn=conn)
 
-def INTERPOL(*args):
-    return Function(203, *args)
+def INTERPOL(*args, conn=None):
+    return Function(203, *args, conn=conn)
 
-def INTERSECT(*args):
-    return Function(204, *args)
+def INTERSECT(*args, conn=None):
+    return Function(204, *args, conn=conn)
 
-def INT_UNSIGNED(*args):
-    return Function(205, *args)
+def INT_UNSIGNED(*args, conn=None):
+    return Function(205, *args, conn=conn)
 
-def INVERSE(*args):
-    return Function(206, *args)
+def INVERSE(*args, conn=None):
+    return Function(206, *args, conn=conn)
 
-def IOR(*args):
-    return Function(207, *args)
+def IOR(*args, conn=None):
+    return Function(207, *args, conn=conn)
 
-def IOR_NOT(*args):
-    return Function(208, *args)
+def IOR_NOT(*args, conn=None):
+    return Function(208, *args, conn=conn)
 
-def IS_IN(*args):
-    return Function(209, *args)
+def IS_IN(*args, conn=None):
+    return Function(209, *args, conn=conn)
 
-def IEOR(*args):
-    return Function(210, *args)
+def IEOR(*args, conn=None):
+    return Function(210, *args, conn=conn)
 
-def IEOR_NOT(*args):
-    return Function(211, *args)
+def IEOR_NOT(*args, conn=None):
+    return Function(211, *args, conn=conn)
 
-def LABEL(*args):
-    return Function(212, *args)
+def LABEL(*args, conn=None):
+    return Function(212, *args, conn=conn)
 
-def LAMINATE(*args):
-    return Function(213, *args)
+def LAMINATE(*args, conn=None):
+    return Function(213, *args, conn=conn)
 
-def LANGUAGE_OF(*args):
-    return Function(214, *args)
+def LANGUAGE_OF(*args, conn=None):
+    return Function(214, *args, conn=conn)
 
-def LASTLOC(*args):
-    return Function(215, *args)
+def LASTLOC(*args, conn=None):
+    return Function(215, *args, conn=conn)
 
-def LE(*args):
-    return Function(216, *args)
+def LE(*args, conn=None):
+    return Function(216, *args, conn=conn)
 
-def LEN(*args):
-    return Function(217, *args)
+def LEN(*args, conn=None):
+    return Function(217, *args, conn=conn)
 
-def LEN_TRIM(*args):
-    return Function(218, *args)
+def LEN_TRIM(*args, conn=None):
+    return Function(218, *args, conn=conn)
 
-def LGE(*args):
-    return Function(219, *args)
+def LGE(*args, conn=None):
+    return Function(219, *args, conn=conn)
 
-def LGT(*args):
-    return Function(220, *args)
+def LGT(*args, conn=None):
+    return Function(220, *args, conn=conn)
 
-def LLE(*args):
-    return Function(221, *args)
+def LLE(*args, conn=None):
+    return Function(221, *args, conn=conn)
 
-def LLT(*args):
-    return Function(222, *args)
+def LLT(*args, conn=None):
+    return Function(222, *args, conn=conn)
 
-def LOG(*args):
-    return Function(223, *args)
+def LOG(*args, conn=None):
+    return Function(223, *args, conn=conn)
 
-def LOG10(*args):
-    return Function(224, *args)
+def LOG10(*args, conn=None):
+    return Function(224, *args, conn=conn)
 
-def LOG2(*args):
-    return Function(225, *args)
+def LOG2(*args, conn=None):
+    return Function(225, *args, conn=conn)
 
-def LOGICAL(*args):
-    return Function(226, *args)
+def LOGICAL(*args, conn=None):
+    return Function(226, *args, conn=conn)
 
-def LONG(*args):
-    return Function(227, *args)
+def LONG(*args, conn=None):
+    return Function(227, *args, conn=conn)
 
-def LONG_UNSIGNED(*args):
-    return Function(228, *args)
+def LONG_UNSIGNED(*args, conn=None):
+    return Function(228, *args, conn=conn)
 
-def LT(*args):
-    return Function(229, *args)
+def LT(*args, conn=None):
+    return Function(229, *args, conn=conn)
 
-def MATMUL(*args):
-    return Function(230, *args)
+def MATMUL(*args, conn=None):
+    return Function(230, *args, conn=conn)
 
-def MAT_ROT(*args):
-    return Function(231, *args)
+def MAT_ROT(*args, conn=None):
+    return Function(231, *args, conn=conn)
 
-def MAT_ROT_INT(*args):
-    return Function(232, *args)
+def MAT_ROT_INT(*args, conn=None):
+    return Function(232, *args, conn=conn)
 
-def MAX(*args):
-    return Function(233, *args)
+def MAX(*args, conn=None):
+    return Function(233, *args, conn=conn)
 
-def MAXEXPONENT(*args):
-    return Function(234, *args)
+def MAXEXPONENT(*args, conn=None):
+    return Function(234, *args, conn=conn)
 
-def MAXLOC(*args):
-    return Function(235, *args)
+def MAXLOC(*args, conn=None):
+    return Function(235, *args, conn=conn)
 
-def MAXVAL(*args):
-    return Function(236, *args)
+def MAXVAL(*args, conn=None):
+    return Function(236, *args, conn=conn)
 
-def MEAN(*args):
-    return Function(237, *args)
+def MEAN(*args, conn=None):
+    return Function(237, *args, conn=conn)
 
-def MEDIAN(*args):
-    return Function(238, *args)
+def MEDIAN(*args, conn=None):
+    return Function(238, *args, conn=conn)
 
-def MERGE(*args):
-    return Function(239, *args)
+def MERGE(*args, conn=None):
+    return Function(239, *args, conn=conn)
 
-def METHOD_OF(*args):
-    return Function(240, *args)
+def METHOD_OF(*args, conn=None):
+    return Function(240, *args, conn=conn)
 
-def MIN(*args):
-    return Function(241, *args)
+def MIN(*args, conn=None):
+    return Function(241, *args, conn=conn)
 
-def MINEXPONENT(*args):
-    return Function(242, *args)
+def MINEXPONENT(*args, conn=None):
+    return Function(242, *args, conn=conn)
 
-def MINLOC(*args):
-    return Function(243, *args)
+def MINLOC(*args, conn=None):
+    return Function(243, *args, conn=conn)
 
-def MINVAL(*args):
-    return Function(244, *args)
+def MINVAL(*args, conn=None):
+    return Function(244, *args, conn=conn)
 
-def MOD(*args):
-    return Function(245, *args)
+def MOD(*args, conn=None):
+    return Function(245, *args, conn=conn)
 
-def MODEL_OF(*args):
-    return Function(246, *args)
+def MODEL_OF(*args, conn=None):
+    return Function(246, *args, conn=conn)
 
-def MULTIPLY(*args):
-    return Function(247, *args)
+def MULTIPLY(*args, conn=None):
+    return Function(247, *args, conn=conn)
 
-def NAME_OF(*args):
-    return Function(248, *args)
+def NAME_OF(*args, conn=None):
+    return Function(248, *args, conn=conn)
 
-def NAND(*args):
-    return Function(249, *args)
+def NAND(*args, conn=None):
+    return Function(249, *args, conn=conn)
 
-def NAND_NOT(*args):
-    return Function(250, *args)
+def NAND_NOT(*args, conn=None):
+    return Function(250, *args, conn=conn)
 
-def NDESC(*args):
-    return Function(251, *args)
+def NDESC(*args, conn=None):
+    return Function(251, *args, conn=conn)
 
-def NE(*args):
-    return Function(252, *args)
+def NE(*args, conn=None):
+    return Function(252, *args, conn=conn)
 
-def NEAREST(*args):
-    return Function(253, *args)
+def NEAREST(*args, conn=None):
+    return Function(253, *args, conn=conn)
 
-def NEQV(*args):
-    return Function(254, *args)
+def NEQV(*args, conn=None):
+    return Function(254, *args, conn=conn)
 
-def NINT(*args):
-    return Function(255, *args)
+def NINT(*args, conn=None):
+    return Function(255, *args, conn=conn)
 
-def NOR(*args):
-    return Function(256, *args)
+def NOR(*args, conn=None):
+    return Function(256, *args, conn=conn)
 
-def NOR_NOT(*args):
-    return Function(257, *args)
+def NOR_NOT(*args, conn=None):
+    return Function(257, *args, conn=conn)
 
-def NOT(*args):
-    return Function(258, *args)
+def NOT(*args, conn=None):
+    return Function(258, *args, conn=conn)
 
-def OBJECT_OF(*args):
-    return Function(259, *args)
+def OBJECT_OF(*args, conn=None):
+    return Function(259, *args, conn=conn)
 
-def OCTAWORD(*args):
-    return Function(260, *args)
+def OCTAWORD(*args, conn=None):
+    return Function(260, *args, conn=conn)
 
-def OCTAWORD_UNSIGNED(*args):
-    return Function(261, *args)
+def OCTAWORD_UNSIGNED(*args, conn=None):
+    return Function(261, *args, conn=conn)
 
-def ON_ERROR(*args):
-    return Function(262, *args)
+def ON_ERROR(*args, conn=None):
+    return Function(262, *args, conn=conn)
 
-def OPCODE_BUILTIN(*args):
-    return Function(263, *args)
+def OPCODE_BUILTIN(*args, conn=None):
+    return Function(263, *args, conn=conn)
 
-def OPCODE_STRING(*args):
-    return Function(264, *args)
+def OPCODE_STRING(*args, conn=None):
+    return Function(264, *args, conn=conn)
 
-def FOPEN(*args):
-    return Function(265, *args)
+def FOPEN(*args, conn=None):
+    return Function(265, *args, conn=conn)
 
-def OPTIONAL(*args):
-    return Function(266, *args)
+def OPTIONAL(*args, conn=None):
+    return Function(266, *args, conn=conn)
 
-def OR(*args):
-    return Function(267, *args)
+def OR(*args, conn=None):
+    return Function(267, *args, conn=conn)
 
-def OR_NOT(*args):
-    return Function(268, *args)
+def OR_NOT(*args, conn=None):
+    return Function(268, *args, conn=conn)
 
-def OUT(*args):
-    return Function(269, *args)
+def OUT(*args, conn=None):
+    return Function(269, *args, conn=conn)
 
-def PACK(*args):
-    return Function(270, *args)
+def PACK(*args, conn=None):
+    return Function(270, *args, conn=conn)
 
-def PHASE_OF(*args):
-    return Function(271, *args)
+def PHASE_OF(*args, conn=None):
+    return Function(271, *args, conn=conn)
 
-def POST_DEC(*args):
-    return Function(272, *args)
+def POST_DEC(*args, conn=None):
+    return Function(272, *args, conn=conn)
 
-def POST_INC(*args):
-    return Function(273, *args)
+def POST_INC(*args, conn=None):
+    return Function(273, *args, conn=conn)
 
-def POWER(*args):
-    return Function(274, *args)
+def POWER(*args, conn=None):
+    return Function(274, *args, conn=conn)
 
-def PRESENT(*args):
-    return Function(275, *args)
+def PRESENT(*args, conn=None):
+    return Function(275, *args, conn=conn)
 
-def PRE_DEC(*args):
-    return Function(276, *args)
+def PRE_DEC(*args, conn=None):
+    return Function(276, *args, conn=conn)
 
-def PRE_INC(*args):
-    return Function(277, *args)
+def PRE_INC(*args, conn=None):
+    return Function(277, *args, conn=conn)
 
-def PRIVATE(*args):
-    return Function(278, *args)
+def PRIVATE(*args, conn=None):
+    return Function(278, *args, conn=conn)
 
-def PROCEDURE_OF(*args):
-    return Function(279, *args)
+def PROCEDURE_OF(*args, conn=None):
+    return Function(279, *args, conn=conn)
 
-def PRODUCT(*args):
-    return Function(280, *args)
+def PRODUCT(*args, conn=None):
+    return Function(280, *args, conn=conn)
 
-def PROGRAM_OF(*args):
-    return Function(281, *args)
+def PROGRAM_OF(*args, conn=None):
+    return Function(281, *args, conn=conn)
 
-def PROJECT(*args):
-    return Function(282, *args)
+def PROJECT(*args, conn=None):
+    return Function(282, *args, conn=conn)
 
-def PROMOTE(*args):
-    return Function(283, *args)
+def PROMOTE(*args, conn=None):
+    return Function(283, *args, conn=conn)
 
-def PUBLIC(*args):
-    return Function(284, *args)
+def PUBLIC(*args, conn=None):
+    return Function(284, *args, conn=conn)
 
-def QUADWORD(*args):
-    return Function(285, *args)
+def QUADWORD(*args, conn=None):
+    return Function(285, *args, conn=conn)
 
-def QUADWORD_UNSIGNED(*args):
-    return Function(286, *args)
+def QUADWORD_UNSIGNED(*args, conn=None):
+    return Function(286, *args, conn=conn)
 
-def QUALIFIERS_OF(*args):
-    return Function(287, *args)
+def QUALIFIERS_OF(*args, conn=None):
+    return Function(287, *args, conn=conn)
 
-def RADIX(*args):
-    return Function(288, *args)
+def RADIX(*args, conn=None):
+    return Function(288, *args, conn=conn)
 
-def RAMP(*args):
-    return Function(289, *args)
+def RAMP(*args, conn=None):
+    return Function(289, *args, conn=conn)
 
-def RANDOM(*args):
-    return Function(290, *args)
+def RANDOM(*args, conn=None):
+    return Function(290, *args, conn=conn)
 
-def RANDOM_SEED(*args):
-    return Function(291, *args)
+def RANDOM_SEED(*args, conn=None):
+    return Function(291, *args, conn=conn)
 
-def DTYPE_RANGE(*args):
-    return Function(292, *args)
+def DTYPE_RANGE(*args, conn=None):
+    return Function(292, *args, conn=conn)
 
-def RANK(*args):
-    return Function(293, *args)
+def RANK(*args, conn=None):
+    return Function(293, *args, conn=conn)
 
-def RAW_OF(*args):
-    return Function(294, *args)
+def RAW_OF(*args, conn=None):
+    return Function(294, *args, conn=conn)
 
-def READ(*args):
-    return Function(295, *args)
+def READ(*args, conn=None):
+    return Function(295, *args, conn=conn)
 
-def REAL(*args):
-    return Function(296, *args)
+def REAL(*args, conn=None):
+    return Function(296, *args, conn=conn)
 
-def REBIN(*args):
-    return Function(297, *args)
+def REBIN(*args, conn=None):
+    return Function(297, *args, conn=conn)
 
-def REF(*args):
-    return Function(298, *args)
+def REF(*args, conn=None):
+    return Function(298, *args, conn=conn)
 
-def REPEAT(*args):
-    return Function(299, *args)
+def REPEAT(*args, conn=None):
+    return Function(299, *args, conn=conn)
 
-def REPLICATE(*args):
-    return Function(300, *args)
+def REPLICATE(*args, conn=None):
+    return Function(300, *args, conn=conn)
 
-def RESHAPE(*args):
-    return Function(301, *args)
+def RESHAPE(*args, conn=None):
+    return Function(301, *args, conn=conn)
 
-def RETURN(*args):
-    return Function(302, *args)
+def RETURN(*args, conn=None):
+    return Function(302, *args, conn=conn)
 
-def REWIND(*args):
-    return Function(303, *args)
+def REWIND(*args, conn=None):
+    return Function(303, *args, conn=conn)
 
-def RMS(*args):
-    return Function(304, *args)
+def RMS(*args, conn=None):
+    return Function(304, *args, conn=conn)
 
-def ROUTINE_OF(*args):
-    return Function(305, *args)
+def ROUTINE_OF(*args, conn=None):
+    return Function(305, *args, conn=conn)
 
-def RRSPACING(*args):
-    return Function(306, *args)
+def RRSPACING(*args, conn=None):
+    return Function(306, *args, conn=conn)
 
-def SCALE(*args):
-    return Function(307, *args)
+def SCALE(*args, conn=None):
+    return Function(307, *args, conn=conn)
 
-def SCAN(*args):
-    return Function(308, *args)
+def SCAN(*args, conn=None):
+    return Function(308, *args, conn=conn)
 
-def FSEEK(*args):
-    return Function(309, *args)
+def FSEEK(*args, conn=None):
+    return Function(309, *args, conn=conn)
 
-def SET_EXPONENT(*args):
-    return Function(310, *args)
+def SET_EXPONENT(*args, conn=None):
+    return Function(310, *args, conn=conn)
 
-def SET_RANGE(*args):
-    return Function(311, *args)
+def SET_RANGE(*args, conn=None):
+    return Function(311, *args, conn=conn)
 
-def ISHFT(*args):
-    return Function(312, *args)
+def ISHFT(*args, conn=None):
+    return Function(312, *args, conn=conn)
 
-def ISHFTC(*args):
-    return Function(313, *args)
+def ISHFTC(*args, conn=None):
+    return Function(313, *args, conn=conn)
 
-def SHIFT_LEFT(*args):
-    return Function(314, *args)
+def SHIFT_LEFT(*args, conn=None):
+    return Function(314, *args, conn=conn)
 
-def SHIFT_RIGHT(*args):
-    return Function(315, *args)
+def SHIFT_RIGHT(*args, conn=None):
+    return Function(315, *args, conn=conn)
 
-def SIGN(*args):
-    return Function(316, *args)
+def SIGN(*args, conn=None):
+    return Function(316, *args, conn=conn)
 
-def SIGNED(*args):
-    return Function(317, *args)
+def SIGNED(*args, conn=None):
+    return Function(317, *args, conn=conn)
 
-def SIN(*args):
-    return Function(318, *args)
+def SIN(*args, conn=None):
+    return Function(318, *args, conn=conn)
 
-def SIND(*args):
-    return Function(319, *args)
+def SIND(*args, conn=None):
+    return Function(319, *args, conn=conn)
 
-def SINH(*args):
-    return Function(320, *args)
+def SINH(*args, conn=None):
+    return Function(320, *args, conn=conn)
 
-def SIZEOF(*args):
-    return Function(321, *args)
+def SIZEOF(*args, conn=None):
+    return Function(321, *args, conn=conn)
 
-def SLOPE_OF(*args):
-    return Function(322, *args)
+def SLOPE_OF(*args, conn=None):
+    return Function(322, *args, conn=conn)
 
-def SMOOTH(*args):
-    return Function(323, *args)
+def SMOOTH(*args, conn=None):
+    return Function(323, *args, conn=conn)
 
-def SOLVE(*args):
-    return Function(324, *args)
+def SOLVE(*args, conn=None):
+    return Function(324, *args, conn=conn)
 
-def SORTVAL(*args):
-    return Function(325, *args)
+def SORTVAL(*args, conn=None):
+    return Function(325, *args, conn=conn)
 
-def SPACING(*args):
-    return Function(326, *args)
+def SPACING(*args, conn=None):
+    return Function(326, *args, conn=conn)
 
-def SPAWN(*args):
-    return Function(327, *args)
+def SPAWN(*args, conn=None):
+    return Function(327, *args, conn=conn)
 
-def SPREAD(*args):
-    return Function(328, *args)
+def SPREAD(*args, conn=None):
+    return Function(328, *args, conn=conn)
 
-def SQRT(*args):
-    return Function(329, *args)
+def SQRT(*args, conn=None):
+    return Function(329, *args, conn=conn)
 
-def SQUARE(*args):
-    return Function(330, *args)
+def SQUARE(*args, conn=None):
+    return Function(330, *args, conn=conn)
 
-def STATEMENT(*args):
-    return Function(331, *args)
+def STATEMENT(*args, conn=None):
+    return Function(331, *args, conn=conn)
 
-def STD_DEV(*args):
-    return Function(332, *args)
+def STD_DEV(*args, conn=None):
+    return Function(332, *args, conn=conn)
 
-def STRING(*args):
-    return Function(333, *args)
+def STRING(*args, conn=None):
+    return Function(333, *args, conn=conn)
 
-def STRING_OPCODE(*args):
-    return Function(334, *args)
+def STRING_OPCODE(*args, conn=None):
+    return Function(334, *args, conn=conn)
 
-def SUBSCRIPT(*args):
-    return Function(335, *args)
+def SUBSCRIPT(*args, conn=None):
+    return Function(335, *args, conn=conn)
 
-def SUBTRACT(*args):
-    return Function(336, *args)
+def SUBTRACT(*args, conn=None):
+    return Function(336, *args, conn=conn)
 
-def SUM(*args):
-    return Function(337, *args)
+def SUM(*args, conn=None):
+    return Function(337, *args, conn=conn)
 
-def SWITCH(*args):
-    return Function(338, *args)
+def SWITCH(*args, conn=None):
+    return Function(338, *args, conn=conn)
 
-def SYSTEM_CLOCK(*args):
-    return Function(339, *args)
+def SYSTEM_CLOCK(*args, conn=None):
+    return Function(339, *args, conn=conn)
 
-def TAN(*args):
-    return Function(340, *args)
+def TAN(*args, conn=None):
+    return Function(340, *args, conn=conn)
 
-def TAND(*args):
-    return Function(341, *args)
+def TAND(*args, conn=None):
+    return Function(341, *args, conn=conn)
 
-def TANH(*args):
-    return Function(342, *args)
+def TANH(*args, conn=None):
+    return Function(342, *args, conn=conn)
 
-def TASK_OF(*args):
-    return Function(343, *args)
+def TASK_OF(*args, conn=None):
+    return Function(343, *args, conn=conn)
 
-def TEXT(*args):
-    return Function(344, *args)
+def TEXT(*args, conn=None):
+    return Function(344, *args, conn=conn)
 
-def TIME_OUT_OF(*args):
-    return Function(345, *args)
+def TIME_OUT_OF(*args, conn=None):
+    return Function(345, *args, conn=conn)
 
-def TINY(*args):
-    return Function(346, *args)
+def TINY(*args, conn=None):
+    return Function(346, *args, conn=conn)
 
-def TRANSFER(*args):
-    return Function(347, *args)
+def TRANSFER(*args, conn=None):
+    return Function(347, *args, conn=conn)
 
-def TRANSPOSE_(*args):
-    return Function(348, *args)
+def TRANSPOSE_(*args, conn=None):
+    return Function(348, *args, conn=conn)
 
-def TRIM(*args):
-    return Function(349, *args)
+def TRIM(*args, conn=None):
+    return Function(349, *args, conn=conn)
 
-def UNARY_MINUS(*args):
-    return Function(350, *args)
+def UNARY_MINUS(*args, conn=None):
+    return Function(350, *args, conn=conn)
 
-def UNARY_PLUS(*args):
-    return Function(351, *args)
+def UNARY_PLUS(*args, conn=None):
+    return Function(351, *args, conn=conn)
 
-def UNION(*args):
-    return Function(352, *args)
+def UNION(*args, conn=None):
+    return Function(352, *args, conn=conn)
 
-def UNITS(*args):
-    return Function(353, *args)
+def UNITS(*args, conn=None):
+    return Function(353, *args, conn=conn)
 
-def UNITS_OF(*args):
-    return Function(354, *args)
+def UNITS_OF(*args, conn=None):
+    return Function(354, *args, conn=conn)
 
-def UNPACK(*args):
-    return Function(355, *args)
+def UNPACK(*args, conn=None):
+    return Function(355, *args, conn=conn)
 
-def UNSIGNED(*args):
-    return Function(356, *args)
+def UNSIGNED(*args, conn=None):
+    return Function(356, *args, conn=conn)
 
-def VAL(*args):
-    return Function(357, *args)
+def VAL(*args, conn=None):
+    return Function(357, *args, conn=conn)
 
-def VALIDATION_OF(*args):
-    return Function(358, *args)
+def VALIDATION_OF(*args, conn=None):
+    return Function(358, *args, conn=conn)
 
-def VALUE_OF(*args):
-    return Function(359, *args)
+def VALUE_OF(*args, conn=None):
+    return Function(359, *args, conn=conn)
 
-def VAR(*args):
-    return Function(360, *args)
+def VAR(*args, conn=None):
+    return Function(360, *args, conn=conn)
 
-def VECTOR(*args):
-    return Function(361, *args)
+def VECTOR(*args, conn=None):
+    return Function(361, *args, conn=conn)
 
-def VERIFY(*args):
-    return Function(362, *args)
+def VERIFY(*args, conn=None):
+    return Function(362, *args, conn=conn)
 
-def WAIT(*args):
-    return Function(363, *args)
+def WAIT(*args, conn=None):
+    return Function(363, *args, conn=conn)
 
-def WHEN_OF(*args):
-    return Function(364, *args)
+def WHEN_OF(*args, conn=None):
+    return Function(364, *args, conn=conn)
 
-def WHERE(*args):
-    return Function(365, *args)
+def WHERE(*args, conn=None):
+    return Function(365, *args, conn=conn)
 
-def WHILE(*args):
-    return Function(366, *args)
+def WHILE(*args, conn=None):
+    return Function(366, *args, conn=conn)
 
-def WINDOW_OF(*args):
-    return Function(367, *args)
+def WINDOW_OF(*args, conn=None):
+    return Function(367, *args, conn=conn)
 
-def WORD(*args):
-    return Function(368, *args)
+def WORD(*args, conn=None):
+    return Function(368, *args, conn=conn)
 
-def WORD_UNSIGNED(*args):
-    return Function(369, *args)
+def WORD_UNSIGNED(*args, conn=None):
+    return Function(369, *args, conn=conn)
 
-def WRITE(*args):
-    return Function(370, *args)
+def WRITE(*args, conn=None):
+    return Function(370, *args, conn=conn)
 
-def ZERO(*args):
-    return Function(371, *args)
+def ZERO(*args, conn=None):
+    return Function(371, *args, conn=conn)
 
-def d2PI():
-    return Function(372)
+def d2PI(conn=None):
+    return Function(372, conn=conn)
 
-def dNARG():
-    return Function(373)
+def dNARG(conn=None):
+    return Function(373, conn=conn)
 
-def ELEMENT(*args):
-    return Function(374, *args)
+def ELEMENT(*args, conn=None):
+    return Function(374, *args, conn=conn)
 
-def RC_DROOP(*args):
-    return Function(375, *args)
+def RC_DROOP(*args, conn=None):
+    return Function(375, *args, conn=conn)
 
-def RESET_PRIVATE():
-    return Function(376)
+def RESET_PRIVATE(conn=None):
+    return Function(376, conn=conn)
 
-def RESET_PUBLIC():
-    return Function(377)
+def RESET_PUBLIC(conn=None):
+    return Function(377, conn=conn)
 
-def SHOW_PRIVATE(*args):
-    return Function(378, *args)
+def SHOW_PRIVATE(*args, conn=None):
+    return Function(378, *args, conn=conn)
 
-def SHOW_PUBLIC(*args):
-    return Function(379, *args)
+def SHOW_PUBLIC(*args, conn=None):
+    return Function(379, *args, conn=conn)
 
-def SHOW_VM(*args):
-    return Function(380, *args)
+def SHOW_VM(*args, conn=None):
+    return Function(380, *args, conn=conn)
 
-def TRANSLATE(*args):
-    return Function(381, *args)
+def TRANSLATE(*args, conn=None):
+    return Function(381, *args, conn=conn)
 
-def TRANSPOSE_MUL(*args):
-    return Function(382, *args)
+def TRANSPOSE_MUL(*args, conn=None):
+    return Function(382, *args, conn=conn)
 
-def UPCASE(*args):
-    return Function(383, *args)
+def UPCASE(*args, conn=None):
+    return Function(383, *args, conn=conn)
 
-def USING(*args):
-    return Function(384, *args)
+def USING(*args, conn=None):
+    return Function(384, *args, conn=conn)
 
-def VALIDATION(*args):
-    return Function(385, *args)
+def VALIDATION(*args, conn=None):
+    return Function(385, *args, conn=conn)
 
-def dDEFAULT():
-    return Function(386)
+def dDEFAULT(conn=None):
+    return Function(386, conn=conn)
 
-def dEXPT():
-    return Function(387)
+def dEXPT(conn=None):
+    return Function(387, conn=conn)
 
-def dSHOT():
-    return Function(388)
+def dSHOT(conn=None):
+    return Function(388, conn=conn)
 
-def GETDBI(*args):
-    return Function(389, *args)
+def GETDBI(*args, conn=None):
+    return Function(389, *args, conn=conn)
 
-def CULL(*args):
-    return Function(390, *args)
+def CULL(*args, conn=None):
+    return Function(390, *args, conn=conn)
 
-def EXTEND(*args):
-    return Function(391, *args)
+def EXTEND(*args, conn=None):
+    return Function(391, *args, conn=conn)
 
-def I_TO_X(*args):
-    return Function(392, *args)
+def I_TO_X(*args, conn=None):
+    return Function(392, *args, conn=conn)
 
-def X_TO_I(*args):
-    return Function(393, *args)
+def X_TO_I(*args, conn=None):
+    return Function(393, *args, conn=conn)
 
-def MAP(*args):
-    return Function(394, *args)
+def MAP(*args, conn=None):
+    return Function(394, *args, conn=conn)
 
-def COMPILE_DEPENDENCY(*args):
-    return Function(395, *args)
+def COMPILE_DEPENDENCY(*args, conn=None):
+    return Function(395, *args, conn=conn)
 
-def DECOMPILE_DEPENDENCY(*args):
-    return Function(396, *args)
+def DECOMPILE_DEPENDENCY(*args, conn=None):
+    return Function(396, *args, conn=conn)
 
-def BUILD_CALL(*args):
-    return Function(397, *args)
+def BUILD_CALL(*args, conn=None):
+    return Function(397, *args, conn=conn)
 
-def ERRORLOGS_OF(*args):
-    return Function(398, *args)
+def ERRORLOGS_OF(*args, conn=None):
+    return Function(398, *args, conn=conn)
 
-def PERFORMANCE_OF(*args):
-    return Function(399, *args)
+def PERFORMANCE_OF(*args, conn=None):
+    return Function(399, *args, conn=conn)
 
-def XD(*args):
-    return Function(400, *args)
+def XD(*args, conn=None):
+    return Function(400, *args, conn=conn)
 
-def CONDITION_OF(*args):
-    return Function(401, *args)
+def CONDITION_OF(*args, conn=None):
+    return Function(401, *args, conn=conn)
 
-def SORT(*args):
-    return Function(402, *args)
+def SORT(*args, conn=None):
+    return Function(402, *args, conn=conn)
 
-def dTHIS():
-    return Function(403)
+def dTHIS(conn=None):
+    return Function(403, conn=conn)
 
-def DATA_WITH_UNITS(*args):
-    return Function(404, *args)
+def DATA_WITH_UNITS(*args, conn=None):
+    return Function(404, *args, conn=conn)
 
-def dATM():
-    return Function(405)
+def dATM(conn=None):
+    return Function(405, conn=conn)
 
-def dEPSILON0():
-    return Function(406)
+def dEPSILON0(conn=None):
+    return Function(406, conn=conn)
 
-def dGN():
-    return Function(407)
+def dGN(conn=None):
+    return Function(407, conn=conn)
 
-def dMU0():
-    return Function(408)
+def dMU0(conn=None):
+    return Function(408, conn=conn)
 
-def EXTRACT(*args):
-    return Function(409, *args)
+def EXTRACT(*args, conn=None):
+    return Function(409, *args, conn=conn)
 
-def FINITE(*args):
-    return Function(410, *args)
+def FINITE(*args, conn=None):
+    return Function(410, *args, conn=conn)
 
-def BIT_SIZE(*args):
-    return Function(411, *args)
+def BIT_SIZE(*args, conn=None):
+    return Function(411, *args, conn=conn)
 
-def MODULO(*args):
-    return Function(412, *args)
+def MODULO(*args, conn=None):
+    return Function(412, *args, conn=conn)
 
-def SELECTED_INT_KIND(*args):
-    return Function(413, *args)
+def SELECTED_INT_KIND(*args, conn=None):
+    return Function(413, *args, conn=conn)
 
-def SELECTED_REAL_KIND(*args):
-    return Function(414, *args)
+def SELECTED_REAL_KIND(*args, conn=None):
+    return Function(414, *args, conn=conn)
 
-def DSQL(*args):
-    return Function(415, *args)
+def DSQL(*args, conn=None):
+    return Function(415, *args, conn=conn)
 
-def ISQL(*args):
-    return Function(416, *args)
+def ISQL(*args, conn=None):
+    return Function(416, *args, conn=conn)
 
-def FTELL(*args):
-    return Function(417, *args)
+def FTELL(*args, conn=None):
+    return Function(417, *args, conn=conn)
 
-def MAKE_ACTION(*args):
-    return Function(418, *args)
+def MAKE_ACTION(*args, conn=None):
+    return Function(418, *args, conn=conn)
 
-def MAKE_CONDITION(*args):
-    return Function(419, *args)
+def MAKE_CONDITION(*args, conn=None):
+    return Function(419, *args, conn=conn)
 
-def MAKE_CONGLOM(*args):
-    return Function(420, *args)
+def MAKE_CONGLOM(*args, conn=None):
+    return Function(420, *args, conn=conn)
 
-def MAKE_DEPENDENCY(*args):
-    return Function(421, *args)
+def MAKE_DEPENDENCY(*args, conn=None):
+    return Function(421, *args, conn=conn)
 
-def MAKE_DIM(*args):
-    return Function(422, *args)
+def MAKE_DIM(*args, conn=None):
+    return Function(422, *args, conn=conn)
 
-def MAKE_DISPATCH(*args):
-    return Function(423, *args)
+def MAKE_DISPATCH(*args, conn=None):
+    return Function(423, *args, conn=conn)
 
-def MAKE_FUNCTION(*args):
-    return Function(424, *args)
+def MAKE_FUNCTION(*args, conn=None):
+    return Function(424, *args, conn=conn)
 
-def MAKE_METHOD(*args):
-    return Function(425, *args)
+def MAKE_METHOD(*args, conn=None):
+    return Function(425, *args, conn=conn)
 
-def MAKE_PARAM(*args):
-    return Function(426, *args)
+def MAKE_PARAM(*args, conn=None):
+    return Function(426, *args, conn=conn)
 
-def MAKE_PROCEDURE(*args):
-    return Function(427, *args)
+def MAKE_PROCEDURE(*args, conn=None):
+    return Function(427, *args, conn=conn)
 
-def MAKE_PROGRAM(*args):
-    return Function(428, *args)
+def MAKE_PROGRAM(*args, conn=None):
+    return Function(428, *args, conn=conn)
 
-def MAKE_RANGE(*args):
-    return Function(429, *args)
+def MAKE_RANGE(*args, conn=None):
+    return Function(429, *args, conn=conn)
 
-def MAKE_ROUTINE(*args):
-    return Function(430, *args)
+def MAKE_ROUTINE(*args, conn=None):
+    return Function(430, *args, conn=conn)
 
-def MAKE_SIGNAL(*args):
-    return Function(431, *args)
+def MAKE_SIGNAL(*args, conn=None):
+    return Function(431, *args, conn=conn)
 
-def MAKE_WINDOW(*args):
-    return Function(432, *args)
+def MAKE_WINDOW(*args, conn=None):
+    return Function(432, *args, conn=conn)
 
-def MAKE_WITH_UNITS(*args):
-    return Function(433, *args)
+def MAKE_WITH_UNITS(*args, conn=None):
+    return Function(433, *args, conn=conn)
 
-def MAKE_CALL(*args):
-    return Function(434, *args)
+def MAKE_CALL(*args, conn=None):
+    return Function(434, *args, conn=conn)
 
-def CLASS_OF(*args):
-    return Function(435, *args)
+def CLASS_OF(*args, conn=None):
+    return Function(435, *args, conn=conn)
 
-def DSCPTR_OF(*args):
-    return Function(436, *args)
+def DSCPTR_OF(*args, conn=None):
+    return Function(436, *args, conn=conn)
 
-def KIND_OF(*args):
-    return Function(437, *args)
+def KIND_OF(*args, conn=None):
+    return Function(437, *args, conn=conn)
 
-def NDESC_OF(*args):
-    return Function(438, *args)
+def NDESC_OF(*args, conn=None):
+    return Function(438, *args, conn=conn)
 
-def ACCUMULATE(*args):
-    return Function(439, *args)
+def ACCUMULATE(*args, conn=None):
+    return Function(439, *args, conn=conn)
 
-def MAKE_SLOPE(*args):
-    return Function(440, *args)
+def MAKE_SLOPE(*args, conn=None):
+    return Function(440, *args, conn=conn)
 
-def REM(*args):
-    return Function(441, *args)
+def REM(*args, conn=None):
+    return Function(441, *args, conn=conn)
 
-def COMPLETION_MESSAGE_OF(*args):
-    return Function(442, *args)
+def COMPLETION_MESSAGE_OF(*args, conn=None):
+    return Function(442, *args, conn=conn)
 
-def INTERRUPT_OF(*args):
-    return Function(443, *args)
+def INTERRUPT_OF(*args, conn=None):
+    return Function(443, *args, conn=conn)
 
-def dSHOTNAME():
-    return Function(444)
+def dSHOTNAME(conn=None):
+    return Function(444, conn=conn)
 
-def BUILD_WITH_ERROR(*args):
-    return Function(445, *args)
+def BUILD_WITH_ERROR(*args, conn=None):
+    return Function(445, *args, conn=conn)
 
-def ERROR_OF(*args):
-    return Function(446, *args)
+def ERROR_OF(*args, conn=None):
+    return Function(446, *args, conn=conn)
 
-def MAKE_WITH_ERROR(*args):
-    return Function(447, *args)
+def MAKE_WITH_ERROR(*args, conn=None):
+    return Function(447, *args, conn=conn)
 
-def DO_TASK(*args):
-    return Function(448, *args)
+def DO_TASK(*args, conn=None):
+    return Function(448, *args, conn=conn)
 
-def ISQL_SET(*args):
-    return Function(449, *args)
+def ISQL_SET(*args, conn=None):
+    return Function(449, *args, conn=conn)
 
-def FS_FLOAT(*args):
-    return Function(450, *args)
+def FS_FLOAT(*args, conn=None):
+    return Function(450, *args, conn=conn)
 
-def FS_COMPLEX(*args):
-    return Function(451, *args)
+def FS_COMPLEX(*args, conn=None):
+    return Function(451, *args, conn=conn)
 
-def FT_FLOAT(*args):
-    return Function(452, *args)
+def FT_FLOAT(*args, conn=None):
+    return Function(452, *args, conn=conn)
 
-def FT_COMPLEX(*args):
-    return Function(453, *args)
+def FT_COMPLEX(*args, conn=None):
+    return Function(453, *args, conn=conn)
 
-def BUILD_OPAQUE(*args):
-    return Function(454, *args)
+def BUILD_OPAQUE(*args, conn=None):
+    return Function(454, *args, conn=conn)
 
-def MAKE_OPAQUE(*args):
-    return Function(455, *args)
+def MAKE_OPAQUE(*args, conn=None):
+    return Function(455, *args, conn=conn)
 
-def DICT(*args):
-    return Function(456, *args)
+def DICT(*args, conn=None):
+    return Function(456, *args, conn=conn)
 
-def TUPLE(*args):
-    return Function(457, *args)
+def TUPLE(*args, conn=None):
+    return Function(457, *args, conn=conn)
 
-def LIST(*args):
-    return Function(458, *args)
+def LIST(*args, conn=None):
+    return Function(458, *args, conn=conn)
 
-def SQUEEZE(*args):
-    return Function(459, *args)
+def SQUEEZE(*args, conn=None):
+    return Function(459, *args, conn=conn)
 
-def FLATTEN(*args):
-    return Function(460, *args)
+def FLATTEN(*args, conn=None):
+    return Function(460, *args, conn=conn)
 

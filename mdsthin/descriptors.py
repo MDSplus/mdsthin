@@ -62,37 +62,37 @@ class Numeric:
     def __add__(self, other):
         if isinstance(other, Signal):
             return Signal(self._data + other.data(), None, *other.dimensions)
-        return Descriptor.from_data(self._data + other)
+        return Descriptor.from_data(self._data + other, conn=self._conn)
     
     def __sub__(self, other):
         if isinstance(other, Signal):
             return Signal(self._data - other.data(), None, *other.dimensions)
-        return Descriptor.from_data(self._data - other)
+        return Descriptor.from_data(self._data - other, conn=self._conn)
     
     def __mul__(self, other):
         if isinstance(other, Signal):
             return Signal(self._data * other.data(), None, *other.dimensions)
-        return Descriptor.from_data(self._data * other)
+        return Descriptor.from_data(self._data * other, conn=self._conn)
     
     def __pow__(self, other):
         if isinstance(other, Signal):
             return Signal(self._data ** other.data(), None, *other.dimensions)
-        return Descriptor.from_data(self._data ** other)
+        return Descriptor.from_data(self._data ** other, conn=self._conn)
     
     def __truediv__(self, other):
         if isinstance(other, Signal):
             return Signal(self._data / other.data(), None, *other.dimensions)
-        return Descriptor.from_data(self._data / other)
+        return Descriptor.from_data(self._data / other, conn=self._conn)
     
     def __floordiv__(self, other):
         if isinstance(other, Signal):
             return Signal(self._data // other.data(), None, *other.dimensions)
-        return Descriptor.from_data(self._data // other)
+        return Descriptor.from_data(self._data // other, conn=self._conn)
     
     def __mod__(self, other):
         if isinstance(other, Signal):
             return Signal(self._data % other.data(), None, *other.dimensions)
-        return Descriptor.from_data(self._data % other)
+        return Descriptor.from_data(self._data % other, conn=self._conn)
     
     def __lshift__(self, other):
         return self.__class__(self._data << other)
@@ -204,9 +204,10 @@ class Descriptor:
         
         return cls.__new__(cls)
 
-    def __init__(self, data=None, dsc=None):
+    def __init__(self, data=None, dsc=None, conn=None):
         self._dsc = dsc
         self._data = data
+        self._conn = conn
 
         if self._dsc is None:
             self._dsc = mdsdsc_t(
@@ -298,7 +299,7 @@ class Descriptor:
         return UInt8Array(self.pack())
     
     @staticmethod
-    def from_data(data):
+    def from_data(data, conn=None):
         """
         Ensure that the given data is a :class:`Descriptor` type. If the data is already
         a :class:`Descriptor`, then just return it. Otherwise, call :class:`Descriptor(data)`
@@ -310,9 +311,11 @@ class Descriptor:
         """
 
         if isinstance(data, Descriptor):
+            if data._conn is None:
+                data._conn = conn
             return data
         
-        return Descriptor(data)
+        return Descriptor(data, conn=conn)
     
     def pack(self):
         """
@@ -369,16 +372,13 @@ class Descriptor:
             if dsc.dtype_id in NUMPY_DTYPE_MAP:
                 data = numpy.frombuffer(data_buffer, dtype=NUMPY_DTYPE_MAP[dtype_id], count=1)[0]
             
-            elif dsc.dtype_id == DTYPE_T:
+            elif dsc.dtype_id in STRING_DTYPE_LIST:
                 data = data_buffer.decode('ascii')
             
             elif dsc.dtype_id in [ DTYPE_F, DTYPE_D, DTYPE_G ]:
                 data = convert_float(dsc.dtype_id, data_buffer)
 
-            if dtype_class is TreeNID:
-                return TreeNID(data, conn=conn)
-                
-            return dtype_class(data)
+            return dtype_class(data, conn=conn)
 
         elif issubclass(dtype_class, DescriptorA):
 
@@ -435,7 +435,7 @@ class Descriptor:
 
             data = data.reshape(shape, order=order)
                 
-            return dtype_class(data)
+            return dtype_class(data, conn=conn)
         
         elif issubclass(dtype_class, DescriptorAPD):
 
@@ -453,13 +453,13 @@ class Descriptor:
             descs = []
             for offset in offsets:
                 if offset == 0:
-                    descs.append(Descriptor())
+                    descs.append(Descriptor(conn=conn))
                     continue
 
                 data_buffer = buffer[offset : ]
                 descs.append(Descriptor.unpack(data_buffer, conn=conn))
 
-            return dtype_class(descs=descs)
+            return dtype_class(descs=descs, conn=conn)
             
         elif issubclass(dtype_class, DescriptorR):
 
@@ -478,13 +478,13 @@ class Descriptor:
 
             for i in range(dsc.ndesc):
                 if offsets[i] == 0:
-                    arguments.append(Descriptor())
+                    arguments.append(Descriptor(conn=conn))
                     continue
 
                 dscptr_buffer = buffer[ offsets[i] : ]
                 arguments.append(Descriptor.unpack(dscptr_buffer, conn=conn))
 
-            return dtype_class(*arguments)
+            return dtype_class(*arguments, conn=conn)
 
 ###
 ### DescriptorS
@@ -501,12 +501,12 @@ class DescriptorS(Descriptor):
         
         return object.__new__(cls)
 
-    def __init__(self, data, dsc):
+    def __init__(self, data, dsc, conn=None):
         
         dsc.class_id = CLASS_S
         dsc.offset = ctypes.sizeof(dsc)
 
-        super().__init__(data=data, dsc=dsc)
+        super().__init__(data=data, dsc=dsc, conn=conn)
     
     def pack(self):
         return self.pack_header() + self.pack_data()
@@ -558,7 +558,7 @@ class DescriptorS(Descriptor):
 
 class String(DescriptorS):
 
-    def __init__(self, data=''):
+    def __init__(self, data='', conn=None):
         data = str(data)
 
         super().__init__(
@@ -567,13 +567,14 @@ class String(DescriptorS):
                 length=len(data.encode('ascii')),
                 dtype_id=DTYPE_T,
             ),
+            conn=conn,
         )
 
     def __str__(self):
         return self._data
 
     def __repr__(self):
-        return f'"{self._data}"'
+        return f'"{self._data.replace('"', '\\"')}"'
 
     def pack_data(self):
         return bytearray(self._data.encode('ascii'))
@@ -586,7 +587,7 @@ class String(DescriptorS):
         return String(buffer.decode('ascii'))
 
 class Ident(DescriptorS):
-    def __init__(self, data=''):
+    def __init__(self, data='', conn=None):
         data = str(data)
 
         super().__init__(
@@ -595,10 +596,17 @@ class Ident(DescriptorS):
                 length=len(data.encode('ascii')),
                 dtype_id=DTYPE_IDENT,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return str(self._data)
+    
+    def data(self):
+        if self._conn is None:
+            raise Exception('Evaluating without a connection is not supported')
+            
+        return self._conn.get(self._data)
 
     def pack_data(self):
         return bytearray(self._data.encode('ascii'))
@@ -616,7 +624,6 @@ class TreeNID(DescriptorS):
             data = data.data()
 
         data = numpy.uint32(data)
-        self._conn = conn
 
         super().__init__(
             data=data,
@@ -624,16 +631,24 @@ class TreeNID(DescriptorS):
                 length=data.itemsize,
                 dtype_id=DTYPE_NID,
             ),
+            conn=conn
         )
 
     def __repr__(self):
         if self._conn is not None:
-            return self._conn.get(f'getnci({self._data}, "FULLPATH")').data()
+            return self._conn.get(f'getnci({self._data}, "MINPATH")').data()
         
         return f'NID({self._data})'
 
+    def data(self):
+        if self._conn is None:
+            raise Exception('Evaluating without a connection is not supported')
+        
+        # TODO: Improve?
+        return self._conn.get('execute(getnci($, "MINPATH"))', self._data)
+    
 class TreePath(DescriptorS):
-    def __init__(self, data=''):
+    def __init__(self, data='', conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -645,10 +660,17 @@ class TreePath(DescriptorS):
                 length=len(data.encode('ascii')),
                 dtype_id=DTYPE_T,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return str(self._data)
+    
+    def data(self):
+        if self._conn is None:
+            raise Exception('Evaluating without a connection is not supported')
+        
+        return self._conn.get('execute($)', self._data).data()
 
     def pack_data(self):
         return bytearray(self._data.encode('ascii'))
@@ -661,7 +683,7 @@ class TreePath(DescriptorS):
         return TreePath(buffer.decode('ascii'))
 
 class UInt8(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
 
@@ -673,13 +695,14 @@ class UInt8(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_BU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}BU'
     
 class UInt16(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -691,13 +714,14 @@ class UInt16(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_WU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}WU'
 
 class UInt32(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -709,13 +733,14 @@ class UInt32(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_LU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}LU'
 
 class UInt64(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -727,13 +752,14 @@ class UInt64(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_QU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}QU'
 
 class Int8(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -745,13 +771,14 @@ class Int8(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_B,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}B'
 
 class Int16(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -763,13 +790,14 @@ class Int16(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_W,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}W'
 
 class Int32(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -781,13 +809,14 @@ class Int32(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_L,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}L'
 
 class Int64(DescriptorS, Numeric):
-    def __init__(self, data=0):
+    def __init__(self, data=0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -799,13 +828,14 @@ class Int64(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_Q,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}Q'
 
 class Float32(DescriptorS, Numeric):
-    def __init__(self, data=0.0):
+    def __init__(self, data=0.0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -817,13 +847,14 @@ class Float32(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_FS,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
         return f'{self.data()}F0'
 
 class Float64(DescriptorS, Numeric):
-    def __init__(self, data=0.0):
+    def __init__(self, data=0.0, conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -835,6 +866,7 @@ class Float64(DescriptorS, Numeric):
                 length=data.itemsize,
                 dtype_id=DTYPE_FT,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -852,7 +884,7 @@ class DescriptorA(Descriptor):
         
         return object.__new__(cls)
 
-    def __init__(self, data, dsc, dims=[]):
+    def __init__(self, data, dsc, dims=[], conn=None):
         
         self._dims = tuple(dims)
 
@@ -874,7 +906,7 @@ class DescriptorA(Descriptor):
             # coeff
             dsc.offset += ctypes.sizeof(ctypes.c_uint32) * dsc.dimct
 
-        super().__init__(data=data, dsc=dsc)
+        super().__init__(data=data, dsc=dsc, conn=conn)
 
     def __eq__(self, other):
         if isinstance(other, Descriptor):
@@ -965,7 +997,7 @@ class DescriptorA(Descriptor):
         return dtype_class(data)
 
 class StringArray(DescriptorA):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
 
@@ -992,6 +1024,7 @@ class StringArray(DescriptorA):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_T,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1029,7 +1062,7 @@ class StringArray(DescriptorA):
         return self._data.astype(str)
 
 class UInt8Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
 
@@ -1045,6 +1078,7 @@ class UInt8Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_BU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1056,7 +1090,7 @@ class UInt8Array(DescriptorA, Numeric):
         return Descriptor.unpack(bytearray(self.data().tobytes()), conn=conn)
 
 class UInt16Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
 
@@ -1068,6 +1102,7 @@ class UInt16Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_WU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1076,7 +1111,7 @@ class UInt16Array(DescriptorA, Numeric):
         return f'Word_Unsigned({repr(self._data.tolist())})'
 
 class UInt32Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1088,6 +1123,7 @@ class UInt32Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_LU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1096,7 +1132,7 @@ class UInt32Array(DescriptorA, Numeric):
         return f'Long_Unsigned({repr(self._data.tolist())})'
 
 class UInt64Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1108,6 +1144,7 @@ class UInt64Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_QU,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1116,7 +1153,7 @@ class UInt64Array(DescriptorA, Numeric):
         return f'Quadword_Unsigned({repr(self._data.tolist())})'
 
 class Int8Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1132,6 +1169,7 @@ class Int8Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_B,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1143,7 +1181,7 @@ class Int8Array(DescriptorA, Numeric):
         return Descriptor.unpack(bytearray(self.data().tobytes()), conn=conn)
 
 class Int16Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1155,6 +1193,7 @@ class Int16Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_W,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1163,7 +1202,7 @@ class Int16Array(DescriptorA, Numeric):
         return f'Word({repr(self._data.tolist())})'
 
 class Int32Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1175,6 +1214,7 @@ class Int32Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_L,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1183,7 +1223,7 @@ class Int32Array(DescriptorA, Numeric):
         return f'Long({repr(self._data.tolist())})'
 
 class Int64Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1195,6 +1235,7 @@ class Int64Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_Q,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1203,7 +1244,7 @@ class Int64Array(DescriptorA, Numeric):
         return f'Quadword({repr(self._data.tolist())})'
 
 class Float32Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1215,6 +1256,7 @@ class Float32Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_FS,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1223,7 +1265,7 @@ class Float32Array(DescriptorA, Numeric):
         return f'FS_FLOAT({repr(self._data.tolist())})'
 
 class Float64Array(DescriptorA, Numeric):
-    def __init__(self, data=[]):
+    def __init__(self, data=[], conn=None):
         if isinstance(data, Descriptor):
             data = data.data()
             
@@ -1235,6 +1277,7 @@ class Float64Array(DescriptorA, Numeric):
                 class_id=CLASS_A,
                 dtype_id=DTYPE_FT,
             ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1254,7 +1297,7 @@ class DescriptorAPD(Descriptor):
         
         return object.__new__(cls)
 
-    def __init__(self, data, count, dsc):
+    def __init__(self, data, count, dsc, conn=None):
 
         # TODO:
         
@@ -1263,7 +1306,7 @@ class DescriptorAPD(Descriptor):
         dsc.arsize = count * dsc.length
         dsc.dimct = 1
 
-        super().__init__(data=data, dsc=dsc)
+        super().__init__(data=data, dsc=dsc, conn=conn)
 
     def data(self):
         return self
@@ -1326,7 +1369,7 @@ class DescriptorAPD(Descriptor):
     
 class List(DescriptorAPD):
     
-    def __init__(self, *items, descs=[]):
+    def __init__(self, *items, descs=[], conn=None):
 
         data = []
 
@@ -1336,11 +1379,11 @@ class List(DescriptorAPD):
         # If this has been called as List(list)
         if len(items) == 1 and isinstance(items[0], (list, tuple)):
             for item in items[0]:
-                data.append(Descriptor.from_data(item))
+                data.append(Descriptor.from_data(item, conn=conn))
 
         else:
             for item in items:
-                data.append(Descriptor.from_data(item))
+                data.append(Descriptor.from_data(item, conn=conn))
 
         data.extend(descs)
 
@@ -1349,7 +1392,8 @@ class List(DescriptorAPD):
             count=len(data),
             dsc=mdsdsc_a_t(
                 dtype_id=DTYPE_LIST,
-            )
+            ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1367,24 +1411,24 @@ class List(DescriptorAPD):
         return self._data[index]
     
     def __setitem__(self, index, value):
-        self._data[index] = Descriptor.from_data(value)
+        self._data[index] = Descriptor.from_data(value, conn=self._conn)
         self._dsc.arsize = len(self._data) * self._dsc.length
     
     def append(self, value):
-        self._data.append(Descriptor.from_data(value))
+        self._data.append(Descriptor.from_data(value, conn=self._conn))
         self._dsc.arsize = len(self._data) * self._dsc.length
 
     def remove(self, value):
-        self._data.remove(Descriptor.from_data(value))
+        self._data.remove(Descriptor.from_data(value, conn=self._conn))
         self._dsc.arsize = len(self._data) * self._dsc.length
 
     def data(self):
-        return self._data
+        return [ data.data() for data in self._data ]
 
 # Trying to subclass tuple causes issues
 class Tuple(DescriptorAPD):
     
-    def __init__(self, *items, descs=[]):
+    def __init__(self, *items, descs=[], conn=None):
 
         data = []
 
@@ -1394,11 +1438,11 @@ class Tuple(DescriptorAPD):
         # If this has been called as Tuple(tuple)
         if len(items) == 1 and isinstance(items[0], (list, tuple)):
             for item in items[0]:
-                data.append(Descriptor.from_data(item))
+                data.append(Descriptor.from_data(item, conn=conn))
 
         else:
             for item in items:
-                data.append(Descriptor.from_data(item))
+                data.append(Descriptor.from_data(item, conn=conn))
 
         data.extend(descs)
 
@@ -1407,7 +1451,8 @@ class Tuple(DescriptorAPD):
             count=len(data),
             dsc=mdsdsc_a_t(
                 dtype_id=DTYPE_TUPLE,
-            )
+            ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1425,12 +1470,12 @@ class Tuple(DescriptorAPD):
         return self._data[index]
 
     def data(self):
-        return tuple(self._data)
+        return tuple([ data.data() for data in self._data ])
 
 class Dictionary(DescriptorAPD):
     
     # dict or key, value, ...repeat
-    def __init__(self, *pairs, descs=[]):
+    def __init__(self, *pairs, descs=[], conn=None):
 
         if len(pairs) == 1 and isinstance(pairs[0], Descriptor):
             pairs = pairs[0].data()
@@ -1449,7 +1494,7 @@ class Dictionary(DescriptorAPD):
 
         data = {}
         for k, v in pairs:
-            data[Descriptor.from_data(k)] = Descriptor.from_data(v)
+            data[Descriptor.from_data(k, conn=conn)] = Descriptor.from_data(v, conn=conn)
 
         if (len(descs) % 2) != 0:
             raise Exception('Cannot create Dictionary, descs must be a list of key/value pairs')
@@ -1462,7 +1507,8 @@ class Dictionary(DescriptorAPD):
             count=len(data) * 2,
             dsc=mdsdsc_a_t(
                 dtype_id=DTYPE_DICTIONARY,
-            )
+            ),
+            conn=conn,
         )
 
     def __repr__(self):
@@ -1486,7 +1532,7 @@ class Dictionary(DescriptorAPD):
         return self._data.__getitem__(key)
     
     def __setitem__(self, key, value):
-        self._data[Descriptor.from_data(key)] = Descriptor.from_data(value)
+        self._data[Descriptor.from_data(key, conn=self._conn)] = Descriptor.from_data(value, conn=self._conn)
         self._dsc.arsize = (len(self._data) * 2) * self._dsc.length
     
     def keys(self):
@@ -1502,7 +1548,7 @@ class Dictionary(DescriptorAPD):
         return self._data.get(key, default)
 
     def data(self):
-        return dict(self._data)
+        return dict({ key.data(): value.data() for key, value in self._data.items() })
     
     @property
     def descs(self):
@@ -1526,17 +1572,17 @@ class DescriptorR(Descriptor):
         
         return object.__new__(cls)
     
-    def __init__(self, dsc, dscptrs, data=None):
+    def __init__(self, dsc, dscptrs, data=None, conn=None):
         
         dsc.class_id = CLASS_R
         dsc.ndesc = len(dscptrs)
         
-        self._dscptrs = [ Descriptor.from_data(dscptr) for dscptr in dscptrs ]
+        self._dscptrs = [ Descriptor.from_data(dscptr, conn=conn) for dscptr in dscptrs ]
 
         if data is not None:
             dsc.length = data.itemsize
 
-        super().__init__(data=data, dsc=dsc)
+        super().__init__(data=data, dsc=dsc, conn=conn)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({", ".join(map(repr, self._dscptrs))})'
@@ -1596,12 +1642,13 @@ class DescriptorR(Descriptor):
 
 class Signal(DescriptorR):
     
-    def __init__(self, value=None, raw=None, *dimensions):
+    def __init__(self, value=None, raw=None, *dimensions, conn=None):
         super().__init__(
             dscptrs=[value, raw, *dimensions],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_SIGNAL,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1632,12 +1679,13 @@ class Signal(DescriptorR):
 
 class Dimension(DescriptorR):
     
-    def __init__(self, window=None, axis=None):
+    def __init__(self, window=None, axis=None, conn=None):
         super().__init__(
             dscptrs=[window, axis],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_DIMENSION,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1653,12 +1701,13 @@ class Dimension(DescriptorR):
 
 class Window(DescriptorR):
     
-    def __init__(self, startidx=None, endingidx=None, value_at_idx0=None):
+    def __init__(self, startidx=None, endingidx=None, value_at_idx0=None, conn=None):
         super().__init__(
             dscptrs=[startidx, endingidx, value_at_idx0],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_WINDOW,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1679,7 +1728,7 @@ class Window(DescriptorR):
 class Slope(DescriptorR):
     
     # slope, begin, ending, ...repeat
-    def __init__(self, *segments):
+    def __init__(self, *segments, conn=None):
         if (len(segments) % 3) != 0:
             raise Exception('len(segments) must be a multiple of 3')
         
@@ -1687,7 +1736,8 @@ class Slope(DescriptorR):
             dscptrs=[*segments],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_SLOPE,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1702,7 +1752,7 @@ class Slope(DescriptorR):
 
 class Function(DescriptorR):
     
-    def __init__(self, opcode=0, *arguments):
+    def __init__(self, opcode=0, *arguments, conn=None):
 
         # e.g. 'ADD' -> 38
         if isinstance(opcode, str):
@@ -1714,7 +1764,8 @@ class Function(DescriptorR):
             dscptrs=[*arguments],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_FUNCTION,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1732,16 +1783,20 @@ class Function(DescriptorR):
         return f'Build_Function({self._data}, {", ".join(map(repr, self._dscptrs))})'
     
     def data(self):
-        raise Exception('Evaluating functions is not implemented')
+        if self._conn == None:
+            raise Exception('Evaluating without a connection is not supported')
+        
+        return self._conn.get('data(SerializeIn($))', self.serialize()).data()
 
 class Conglom(DescriptorR):
     
-    def __init__(self, image=None, model=None, name=None, qualifiers=None):
+    def __init__(self, image=None, model=None, name=None, qualifiers=None, conn=None):
         super().__init__(
             dscptrs=[image, model, name, qualifiers],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_CONGLOM,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1765,12 +1820,13 @@ class Conglom(DescriptorR):
 
 class Range(DescriptorR):
     
-    def __init__(self, begin=None, ending=None, deltaval=None):
+    def __init__(self, begin=None, ending=None, deltaval=None, conn=None):
         super().__init__(
             dscptrs=[begin, ending, deltaval],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_RANGE,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1791,16 +1847,23 @@ class Range(DescriptorR):
     def data(self):
         return range(self.begin.data(), self.ending.data(), self.deltaval.data())
     
+        # if self._conn is None:
+        #     # TODO: Improve
+        #     return range(self.begin.data(), self.ending.data(), self.deltaval.data())
+            
+        # return self._conn.get('data(SerializeIn($))', self.serialize()).data()
+    
     # TODO: iterator?
     
 class Action(DescriptorR):
 
-    def __init__(self, dispatch=None, task=None, errorlogs=None, completion_message=None, performance=None):
+    def __init__(self, dispatch=None, task=None, errorlogs=None, completion_message=None, performance=None, conn=None):
         super().__init__(
             dscptrs=[dispatch, task, errorlogs, completion_message, performance],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_ACTION,
-            )
+            ),
+            conn=conn,
         )
     
     @property
@@ -1828,13 +1891,14 @@ class Action(DescriptorR):
 
 class Dispatch(DescriptorR):
     
-    def __init__(self, treesched=0, ident=None, phase=None, when=None, completion=None):
+    def __init__(self, treesched=0, ident=None, phase=None, when=None, completion=None, conn=None):
         super().__init__(
             data=numpy.uint8(treesched),
             dscptrs=[ident, phase, when, completion],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_DISPATCH,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1862,12 +1926,13 @@ class Dispatch(DescriptorR):
 
 class Program(DescriptorR):
     
-    def __init__(self, time_out=None, program=None):
+    def __init__(self, time_out=None, program=None, conn=None):
         super().__init__(
             dscptrs=[time_out, program],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_PROGRAM,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1886,12 +1951,13 @@ class Program(DescriptorR):
 
 class Routine(DescriptorR):
     
-    def __init__(self, time_out=None, image=None, routine=None, *arguments):
+    def __init__(self, time_out=None, image=None, routine=None, *arguments, conn=None):
         super().__init__(
             dscptrs=[time_out, image, routine, *arguments],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_ROUTINE,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1918,12 +1984,13 @@ class Routine(DescriptorR):
 
 class Procedure(DescriptorR):
     
-    def __init__(self, time_out=None, language=None, procedure=None, *arguments):
+    def __init__(self, time_out=None, language=None, procedure=None, *arguments, conn=None):
         super().__init__(
             dscptrs=[time_out, language, procedure, *arguments],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_PROCEDURE,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1950,12 +2017,13 @@ class Procedure(DescriptorR):
 
 class Method(DescriptorR):
     
-    def __init__(self, time_out=None, method=None, device=None):
+    def __init__(self, time_out=None, method=None, device=None, conn=None):
         super().__init__(
             dscptrs=[time_out, method, device],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_METHOD,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -1974,17 +2042,21 @@ class Method(DescriptorR):
         return f'Build_Method({", ".join(map(repr, self._dscptrs))})'
     
     def data(self):
-        raise Exception('Methods are not implemented')
+        if self._conn == None:
+            raise Exception('Evaluating without a connection is not supported')
+        
+        return self._conn.get('data(SerializeIn($))', self.serialize()).data()
 
 class Dependency(DescriptorR):
     
-    def __init__(self, treedep=0, *arguments):
+    def __init__(self, treedep=0, *arguments, conn=None):
         super().__init__(
             data=numpy.uint8(treedep),
             dscptrs=[*arguments],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_DEPENDENCY,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -2003,13 +2075,14 @@ class Dependency(DescriptorR):
 
 class Condition(DescriptorR):
     
-    def __init__(self, treecond=0, condition=None):
+    def __init__(self, treecond=0, condition=None, conn=None):
         super().__init__(
             data=numpy.uint8(treecond),
             dscptrs=[condition],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_CONDITION,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -2025,12 +2098,13 @@ class Condition(DescriptorR):
 
 class WithUnits(DescriptorR):
     
-    def __init__(self, value=None, units=None):
+    def __init__(self, value=None, units=None, conn=None):
         super().__init__(
             dscptrs=[value, units],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_WITH_UNITS,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -2049,13 +2123,14 @@ class WithUnits(DescriptorR):
 
 class Call(DescriptorR):
     
-    def __init__(self, return_dtype_id=DTYPE_L, image=None, routine=None, *arguments):
+    def __init__(self, return_dtype_id=DTYPE_L, image=None, routine=None, *arguments, conn=None):
         super().__init__(
             data=numpy.uint8(return_dtype_id),
             dscptrs=[image, routine, *arguments],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_CALL,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -2082,12 +2157,13 @@ class Call(DescriptorR):
 
 class WithError(DescriptorR):
     
-    def __init__(self, value=None, error=None):
+    def __init__(self, value=None, error=None, conn=None):
         super().__init__(
             dscptrs=[value, error],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_WITH_ERROR,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -2109,12 +2185,13 @@ class WithError(DescriptorR):
 
 class Opaque(DescriptorR):
     
-    def __init__(self, value=None, opaque_type=None):
+    def __init__(self, value=None, opaque_type=None, conn=None):
         super().__init__(
             dscptrs=[value, opaque_type],
             dsc=mdsdsc_r_t(
                 dtype_id=DTYPE_OPAQUE,
-            )
+            ),
+            conn=conn,
         )
 
     @property
@@ -2210,6 +2287,12 @@ DTYPE_CLASS_MAP = {
         DTYPE_OPAQUE: Opaque,
     }
 }
+
+STRING_DTYPE_LIST = [
+    DTYPE_T,
+    DTYPE_PATH,
+    DTYPE_IDENT,
+]
 
 NUMPY_DTYPE_MAP = {
     DTYPE_BU: numpy.uint8,
