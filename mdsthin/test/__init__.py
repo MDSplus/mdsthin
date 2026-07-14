@@ -27,6 +27,7 @@ from .cmod_test import *
 from .connection_test import *
 from .descriptors_test import *
 from .exceptions_test import *
+from .peer_close_test import *
 from .serialize_test import *
 from .write_test import *
 
