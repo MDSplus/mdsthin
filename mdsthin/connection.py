@@ -89,7 +89,7 @@ class Connection:
             for ssh:// and sshp:// connections. Remember to use `ssh_subprocess_args` to pass any
             necessary arguments.
         :raises TimeoutError: if the connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko socket wrapper fails.
         :raises paramiko.ssh_exception.*: if the paramiko client fails.
         :raises socket.gaierror: if `host` could not be resolved to an IP.
@@ -165,7 +165,7 @@ class Connection:
 
         :raises TimeoutError: if the connection fails.
         :raises socket.gaierror: if the hostname could not be resolved.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko socket wrapper fails.
         :raises paramiko.ssh_exception.*: if the paramiko client fails.
         :raises MdsException: if the login fails.
@@ -389,6 +389,8 @@ class Connection:
         msg_login_view = memoryview(msg_login_buffer)
         while len(msg_login_view) > 0:
             bytes_read = self._socket.recv_into(msg_login_view, len(msg_login_view), 0)
+            if bytes_read == 0:
+                raise BrokenPipeError('Connection closed by peer')
             msg_login_view = msg_login_view[bytes_read : ]
         
         msg_login = Message.from_buffer_copy(msg_login_buffer)
@@ -434,6 +436,8 @@ class Connection:
         msg_view = memoryview(msg_buffer)
         while len(msg_view) > 0:
             bytes_read = self._socket.recv_into(msg_view, len(msg_view), 0)
+            if bytes_read == 0:
+                raise BrokenPipeError('Connection closed by peer')
             msg_view = msg_view[bytes_read : ]
 
         msg = Message.from_buffer_copy(msg_buffer)
@@ -446,6 +450,8 @@ class Connection:
             data_view = memoryview(data_buffer)
             while len(data_view) > 0:
                 bytes_read = self._socket.recv_into(data_view, len(data_view), 0)
+                if bytes_read == 0:
+                    raise BrokenPipeError('Connection closed by peer')
                 data_view = data_view[bytes_read : ]
 
                 self._logger.debug(f'Received data packet of {bytes_read} bytes, {data_length - len(data_view)}/{data_length}')
@@ -465,7 +471,7 @@ class Connection:
         :return: The result of executing the expression.
         :rtype: :class:`Descriptor`
         :raises TimeoutError: if the connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result status indicates an error.
         """
@@ -508,7 +514,7 @@ class Connection:
         :return: The result of executing the expression.
         :rtype: :class:`Descriptor`
         :raises TimeoutError: if the connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result status indicates an error.
         """
@@ -523,7 +529,7 @@ class Connection:
         :param *args: The optional arguments to be inserted for the placeholders in the
             expression. All native python/numpy types will be converted to Descriptors.
         :raises TimeoutError: if the connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result status indicates an error.
         """
@@ -565,7 +571,7 @@ class Connection:
         :param str tree: The tree name to open.
         :param int shot: The shot number to open.
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the tree could not be opened.
         """
@@ -582,7 +588,7 @@ class Connection:
         :param str tree: The tree name to close.
         :param int shot: The shot number to close.
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the tree could not be closed.
         """
@@ -599,7 +605,7 @@ class Connection:
         :return: The number of trees closed.
         :rtype: Descriptor
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if there was a problem executing the `get()`.
         """
@@ -612,7 +618,7 @@ class Connection:
 
         :param str path: The tree node path to be set as the new default location.
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the tree node could not be found, or the location
             could not be changed.
@@ -631,7 +637,7 @@ class Connection:
         :return: The command output from mdstcl.
         :rtype: str
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if there was a problem executing the command.
         """
@@ -656,7 +662,7 @@ class Connection:
         Create a faux mdstcl prompt, calling `tcl()` for each command.
 
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         """
 
@@ -693,7 +699,7 @@ class Connection:
         Create a faux tdic prompt, calling `get()` for each command.
 
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         """
 
@@ -792,7 +798,7 @@ class GetMany:
             `{ NAME: { 'error': ERROR_STRING } }` if there was an error.
         :rtype: :class:`Dictionary`
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result of GetManyExecute() is an error string, or
             if `get()` encounters an error.
@@ -897,7 +903,7 @@ class PutMany:
             `{ NAME: ERROR_STRING } }` if there was an error.
         :rtype: :class:`Dictionary`
         :raises TimeoutError: if the network connection fails.
-        :raises BrokenPipeError: if the SSH subprocess fails.
+        :raises BrokenPipeError: if the SSH subprocess fails, or if the connection is closed unexpectedly.
         :raises OSError: if the paramiko client fails.
         :raises MdsException: if the result of PutManyExecute() is an error string, or
             if `get()` encounters an error.
